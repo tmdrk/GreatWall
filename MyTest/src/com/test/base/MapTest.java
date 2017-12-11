@@ -13,7 +13,7 @@ public class MapTest {
 		
 		Map<String,Object> map2 = new HashMap<String,Object>();
 		map2.put("id", 2);
-		map2.put("name", "小小小小阿达");
+		map2.put("name", "小小小小阿达!!!!!!!!!!!!!!!!!");
 		map2.put("types", "2");
 		Random random = new Random();
 		int sum1 = 0;
