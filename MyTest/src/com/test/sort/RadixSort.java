@@ -14,10 +14,10 @@ package com.test.sort;
  */
 public class RadixSort extends BaseSort{
 	public static void main(String[] args) {
-		int[] numbers = {10,-5,32,45,31,25,16,-65,6,-78,35,9,16,44,13,34,38,66,-99889,9931,55};
-//		int[] numbers = {98,88,32,106760,31};
+//		int[] numbers = {10,-5,32,45,31,25,16,-65,6,-78,35,9,16,44,13,34,38,66,-99889,9931,55};
+		int[] numbers = {-98,-88,8889932,-106760,-31};
 		printArray("排序前",numbers);
-		sort(numbers);
+//		sort(numbers);
 		printArray("排序后",numbers);
 		System.out.println(depth(numbers));
 	}
@@ -58,7 +58,7 @@ public class RadixSort extends BaseSort{
 	public static int depth(int[] numbers){
 		int max = 0;
 		for(int i=0;i<numbers.length-1;i++){
-			if(numbers[i]<numbers[i+1]){
+			if(Math.abs(numbers[i])<Math.abs(numbers[i+1])){
 				max = i+1;
 			}
 		}
