@@ -1,5 +1,6 @@
 package com.test.base;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -36,6 +37,7 @@ public class TreeMapTest {
         pp.put("remark","kjsdfhksfjs");
         pp.put("wishing", "sdfsd");  
         System.out.println(getUrlParamsByMap(pp));
+        Map m = new HashMap();
 	}
     /**
      * 将map转换成url

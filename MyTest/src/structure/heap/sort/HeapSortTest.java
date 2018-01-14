@@ -13,7 +13,7 @@ import com.test.sort.ShellSort;
 
 public class HeapSortTest {
 	public static void main(String[] args) {
-		int length = 10000;
+		int length = 10000000;
 		int[] tree = new int[length];
 		Random r = new Random();
 		for(int i=0;i<length;i++){
@@ -28,50 +28,50 @@ public class HeapSortTest {
 		int[] tree7 = tree.clone();
 		int[] tree8 = tree.clone();
 		
-		long start = System.nanoTime();
+		long start = nowTime(length);
 		sortHeap(tree);
-		long end = System.nanoTime();
-		System.out.println("堆排序耗时："+(end-start)+"纳秒 ");
+		long end = nowTime(length);
+		printTime("堆排序",start,end,length);
 		
-		long start1 = System.nanoTime();
-		InsertSort.sort(tree1);
-		long end1 = System.nanoTime();
-		System.out.println("插入排序耗时："+(end1-start1)+"纳秒 ");
+//		long start1 = nowTime(length);
+//		InsertSort.sort(tree1);
+//		long end1 = nowTime(length);
+//		printTime("插入排序",start1,end1,length);
+//		
+//		long start2 = nowTime(length);
+//		BubbleSort.sort(tree2);
+//		long end2 = nowTime(length);
+//		printTime("冒泡排序",start2,end2,length);
+//		
+//		long start3 = nowTime(length);
+//		SelectionSort.sort(tree3);
+//		long end3 = nowTime(length);
+//		printTime("选择排序",start3,end3,length);
 		
-		long start2 = System.nanoTime();
-		BubbleSort.sort(tree2);
-		long end2 = System.nanoTime();
-		System.out.println("冒泡排序耗时："+(end2-start2)+"纳秒 ");
-		
-		long start3 = System.nanoTime();
-		SelectionSort.sort(tree3);
-		long end3 = System.nanoTime();
-		System.out.println("选择排序耗时："+(end3-start3)+"纳秒 ");
-		
-		long start4 = System.nanoTime();
+		long start4 = nowTime(length);
 		MergeSort.sort(tree4);
-		long end4 = System.nanoTime();
-		System.out.println("归并排序耗时："+(end4-start4)+"纳秒 ");
+		long end4 = nowTime(length);
+		printTime("归并排序",start4,end4,length);
 		
-		long start5 = System.nanoTime();
+		long start5 = nowTime(length);
 		MergeParallelSort.sort(tree5);
-		long end5 = System.nanoTime();
-		System.out.println("并行归并排序耗时："+(end5-start5)+"纳秒");
+		long end5 = nowTime(length);
+		printTime("并行归并排序",start5,end5,length);
 		
-		long start6 = System.nanoTime();
+		long start6 = nowTime(length);
 		QuickSort.sort(tree6);
-		long end6 = System.nanoTime();
-		System.out.println("快速排序耗时："+(end6-start6)+"纳秒");
+		long end6 = nowTime(length);
+		printTime("快速排序",start6,end6,length);
 		
-		long start7 = System.nanoTime();
+		long start7 = nowTime(length);
 		RadixSort.sort(tree7);
-		long end7 = System.nanoTime();
-		System.out.println("基数排序耗时："+(end7-start7)+"纳秒");
+		long end7 = nowTime(length);
+		printTime("基数排序",start7,end7,length);
 		
-		long start8 = System.nanoTime();
+		long start8 = nowTime(length);
 		ShellSort.sort(tree8);
-		long end8 = System.nanoTime();
-		System.out.println("希尔排序耗时："+(end8-start8)+"纳秒");
+		long end8 = nowTime(length);
+		printTime("希尔排序",start8,end8,length);
 //		BuildHeap.printArray("排序后",tree7);
 		
 	}
@@ -86,5 +86,20 @@ public class HeapSortTest {
 			BuildHeap.adjustHeap(tree, 0, newIndex);
 		}
 //		BuildHeap.printArray("堆排序",tree);
+	}
+	
+	public static long nowTime(int length){
+		if(length>1000){
+			return System.currentTimeMillis();
+		}else{
+			return System.nanoTime();
+		}
+	}
+	public static void printTime(String name,long start,long end,int length){
+		if(length>1000){
+			System.out.println(name+"耗时："+(end-start)+"毫秒");
+		}else{
+			System.out.println(name+"耗时："+(end-start)+"纳秒");
+		}
 	}
 }

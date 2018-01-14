@@ -26,10 +26,15 @@ public class ListUtil {
 		return list;
 	}
 	
+	public static void mergeList(){
+		
+	}
+	
 	public static void main(String[] args) {
 		List<Integer> userIdList = new ArrayList<Integer>();
 		userIdList.add(1);
 		userIdList.add(2);
+		userIdList.add(4);
 		List<Integer> userIdList1 = new ArrayList<Integer>();
 		userIdList1.add(2);
 		userIdList1.add(3);
