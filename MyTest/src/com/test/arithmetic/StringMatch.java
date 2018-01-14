@@ -1,7 +1,5 @@
 package com.test.arithmetic;
 
-import org.apache.commons.lang.text.StrLookup;
-
 /**
  * 子串定位运算又称为模式匹配(Pattern Matching)或串匹配(String Matching)
  * 1 Brute Force算法
