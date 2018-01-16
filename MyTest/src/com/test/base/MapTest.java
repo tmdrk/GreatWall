@@ -8,7 +8,7 @@ public class MapTest {
 	public static void main(String[] args) {
 		Map<String,Object> map1 = new HashMap<String,Object>();
 		map1.put("id", 1);
-		map1.put("name", "aaaaaa宽带缴费!!!!!!!!!!!!!!!!!!!123456bbb");
+		map1.put("name", "aaaaaa宽带缴费!!!!!!!!!!!!!!!!!!!123456bbbccc");
 		map1.put("type", "3");
 		
 		Map<String,Object> map2 = new HashMap<String,Object>();
