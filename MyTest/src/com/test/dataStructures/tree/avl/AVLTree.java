@@ -20,7 +20,7 @@ public class AVLTree {
 		int data;
 		Node lchild;
 		Node rchild;
-		public int height;//当前结点的高度
+		public int balance;//平衡因子
 		public Node(){
 			this(0);
 		}
@@ -30,11 +30,11 @@ public class AVLTree {
 		public Node(Node lchild,Node rchild,int v){
 			this(lchild,rchild,v,0);
 		}
-		public Node(Node lchild,Node rchild,int v,int height){
+		public Node(Node lchild,Node rchild,int v,int balance){
 			this.lchild = lchild;
 			this.rchild = rchild;
 			this.data = v;
-			this.height = height;
+			this.balance = balance;
 		}
 		public String toString(){
 			return "data="+data+" lchild data="+(lchild==null?"null":String.valueOf(lchild.data))+" rchild data="+(rchild==null?"null":String.valueOf(rchild.data));
@@ -64,34 +64,84 @@ public class AVLTree {
 		}
 		return isExist(node.lchild,v)||isExist(node.rchild,v);
 	}
-	public void insert(int v){
+	boolean needChange=true;//是否需要调整上级平衡因子
+	public boolean insert(int v){
 		size++;
-		if(getRoot()==null){
-			sentinel.lchild = new Node(v);
-			return;
-		}
-		insert(getRoot(),v);
+		needChange=true;
+		return insert(sentinel,true,v);
 	}
-	public void insert(Node node,int v){
-		if(node.data>=v){
-			if(node.lchild==null){
-				node.lchild = new Node(v);
+	public boolean insert(Node parent,Boolean isLeft,int v){
+		if(isLeft){
+			if(parent.lchild==null){
+				parent.lchild = new Node(v);
+				parent.balance = parent.balance+1;
+				return true;
 			}else{
-				insert(node.lchild,v);
+				boolean result = false;
+				if(parent.lchild.data>=v){
+					result = insert(parent.lchild,true,v);
+				}else{
+					result = insert(parent.lchild,false,v);
+				}
+				if(parent.lchild.balance==2){
+					leftBalance(parent, isLeft);
+				}else if(parent.lchild.balance==-2){
+					rightBalance(parent, isLeft);
+				}
+				if(needChange){
+					if(parent.lchild.balance!=0){
+						parent.balance=parent.balance+Math.abs(parent.lchild.balance);
+					}else{
+						/********如果插入后父节点平衡因子为0，则递归返回都不用再调整*******/
+						needChange = false;
+					}
+				}
+				return result;
 			}
 		}else{
-			if(node.rchild==null){
-				node.rchild = new Node(v);
+			if(parent.rchild==null){
+				parent.rchild = new Node(v);
+				parent.balance = parent.balance-1;
+				return true;
 			}else{
-				insert(node.rchild,v);
+				boolean result = false;
+				if(parent.rchild.data>=v){
+					result = insert(parent.rchild,true,v);
+				}else{
+					result = insert(parent.rchild,false,v);
+				}
+				if(parent.rchild.balance==2){
+					leftBalance(parent,isLeft);
+				}else if(parent.rchild.balance==-2){
+					rightBalance(parent,isLeft);
+				}
+				if(needChange){
+					if(parent.rchild.balance!=0){
+						parent.balance=parent.balance-Math.abs(parent.rchild.balance);
+					}else{
+						/********如果插入后父节点平衡因子为0，则递归返回都不用再调整*******/
+						needChange = false;
+					}
+				}
+				return result;
 			}
 		}
 	}
+
 	public Node delete(int v){
 		size--;
 		Node retNode = delete(sentinel,true,v);
 		return retNode;
 	}
+	/**
+	 * 删除节点
+	 * @param parent 父节点
+	 * @param isleft 是否是左节点
+	 * @param v
+	 * @return
+	 * @author zhoujie
+	 * @date 2018年1月18日 下午5:57:18
+	 */
 	public Node delete(Node parent,boolean isleft,int v){
 		Node retNode = null;
 		Node node;
@@ -221,6 +271,12 @@ public class AVLTree {
 		node.rchild = deleteMax(node.rchild);
 		return node;
 	}
+	/**
+	 * 求树高
+	 * @return
+	 * @author zhoujie
+	 * @date 2018年1月18日 下午6:01:39
+	 */
 	public int height(){
 		return height(getRoot());
 	}
@@ -237,15 +293,168 @@ public class AVLTree {
 			}
 		}
 	}
+	public void leftBalance(Node parent,Boolean isLeft){
+		if(isLeft){
+			if(parent.lchild.lchild.balance==1){
+				/*********** 调节平衡因子 **********/
+				parent.lchild.balance = parent.lchild.balance - 2;
+				parent.lchild.lchild.balance = parent.lchild.lchild.balance - 1;
+				/*********** 调节节点位置 **********/
+				Node temp = parent.lchild.lchild;
+				parent.lchild.lchild = temp.rchild;
+				temp.rchild = parent.lchild;
+				parent.lchild = temp;
+				
+			}else if(parent.lchild.lchild.balance==-1){
+				/*********** 调节平衡因子 **********/
+				if(parent.lchild.lchild.rchild.balance==0){
+					parent.lchild.balance = parent.lchild.balance - 2;
+					parent.lchild.lchild.balance = parent.lchild.lchild.balance + 1;
+				}else if(parent.lchild.lchild.rchild.balance==1){
+					parent.lchild.balance = parent.lchild.balance - 3;
+					parent.lchild.lchild.balance = parent.lchild.lchild.balance + 1;
+					parent.lchild.lchild.rchild.balance = parent.lchild.lchild.rchild.balance - 1;
+				}else if(parent.lchild.lchild.rchild.balance==-1){
+					parent.lchild.balance = parent.lchild.balance - 2;
+					parent.lchild.lchild.balance = parent.lchild.lchild.balance + 2;
+					parent.lchild.lchild.rchild.balance = parent.lchild.lchild.rchild.balance + 1;
+				}
+				/*********** 调节节点位置 **********/
+				Node temp = parent.lchild.lchild.rchild;
+				parent.lchild.lchild.rchild = temp.lchild;
+				temp.lchild = parent.lchild.lchild;
+				parent.lchild.lchild = temp.rchild;
+				temp.rchild = parent.lchild;
+				parent.lchild = temp;
+			}else{
+				
+			}
+		}else{
+			if(parent.rchild.lchild.balance==1){
+				/*********** 调节平衡因子 **********/
+				parent.rchild.balance = parent.rchild.balance - 2;
+				parent.rchild.lchild.balance = parent.rchild.lchild.balance - 1;
+				/*********** 调节节点位置 **********/
+				Node temp = parent.rchild.lchild;
+				parent.rchild.lchild = temp.rchild;
+				temp.rchild = parent.rchild;
+				parent.rchild = temp;
+				
+			}else if(parent.rchild.lchild.balance==-1){
+				/*********** 调节平衡因子 **********/
+				if(parent.rchild.lchild.rchild.balance==0){
+					parent.rchild.balance = parent.rchild.balance - 2;
+					parent.rchild.lchild.balance = parent.rchild.lchild.balance + 1;
+				}else if(parent.rchild.lchild.rchild.balance==1){
+					parent.rchild.balance = parent.rchild.balance - 3;
+					parent.rchild.lchild.balance = parent.rchild.lchild.balance + 1;
+					parent.rchild.lchild.rchild.balance = parent.rchild.lchild.rchild.balance - 1;
+				}else if(parent.rchild.lchild.rchild.balance==-1){
+					parent.rchild.balance = parent.rchild.balance - 2;
+					parent.rchild.lchild.balance = parent.rchild.lchild.balance + 2;
+					parent.rchild.lchild.rchild.balance = parent.rchild.lchild.rchild.balance + 1;
+				}
+				/*********** 调节节点位置 **********/
+				Node temp = parent.rchild.lchild.rchild;
+				parent.rchild.lchild.rchild = temp.lchild;
+				temp.lchild = parent.rchild.lchild;
+				parent.rchild.lchild = temp.rchild;
+				temp.rchild = parent.rchild;
+				parent.rchild = temp;
+			}else{
+				
+			}
+		}
+	}
+	
+	public void rightBalance(Node parent,Boolean isLeft){
+		if(isLeft){
+			if(parent.lchild.rchild.balance==-1){
+				/*********** 调节平衡因子 **********/
+				parent.lchild.balance = parent.lchild.balance + 2;
+				parent.lchild.rchild.balance = parent.lchild.rchild.balance + 1;
+				/*********** 调节节点位置 **********/
+				Node temp = parent.lchild.rchild;
+				parent.lchild.rchild = temp.lchild;
+				temp.lchild = parent.lchild;
+				parent.lchild = temp;
+				
+			}else if(parent.lchild.rchild.balance==1){
+				/*********** 调节平衡因子 **********/
+				if(parent.lchild.rchild.lchild.balance==0){
+					parent.lchild.balance = parent.lchild.balance + 2;
+					parent.lchild.rchild.balance = parent.lchild.rchild.balance - 1;
+				}else if(parent.lchild.rchild.lchild.balance==1){
+					parent.lchild.balance = parent.lchild.balance + 2;
+					parent.lchild.rchild.balance = parent.lchild.rchild.balance - 2;
+					parent.lchild.rchild.lchild.balance = parent.lchild.rchild.lchild.balance - 1;
+				}else if(parent.lchild.rchild.lchild.balance==-1){
+					parent.lchild.balance = parent.lchild.balance + 3;
+					parent.lchild.rchild.balance = parent.lchild.rchild.balance - 1;
+					parent.lchild.rchild.lchild.balance = parent.lchild.rchild.lchild.balance + 1;
+				}
+				/*********** 调节节点位置 **********/
+				Node temp = parent.lchild.rchild.lchild;
+				parent.lchild.rchild.lchild = temp.rchild;
+				temp.rchild = parent.lchild.rchild;
+				parent.lchild.rchild = temp.lchild;
+				temp.lchild = parent.lchild;
+				parent.lchild = temp;
+			}else{
+				
+			}
+		}else{
+			if(parent.rchild.rchild.balance==-1){
+				/*********** 调节平衡因子 **********/
+				parent.rchild.balance = parent.rchild.balance + 2;
+				parent.rchild.rchild.balance = parent.rchild.rchild.balance + 1;
+				/*********** 调节节点位置 **********/
+				Node temp = parent.rchild.rchild;
+				parent.rchild.rchild = temp.lchild;
+				temp.lchild = parent.rchild;
+				parent.rchild = temp;
+				
+			}else if(parent.rchild.rchild.balance==1){
+				/*********** 调节平衡因子 **********/
+				if(parent.rchild.rchild.lchild.balance==0){
+					parent.rchild.balance = parent.rchild.balance + 2;
+					parent.rchild.rchild.balance = parent.rchild.rchild.balance - 1;
+				}else if(parent.rchild.rchild.lchild.balance==1){
+					parent.rchild.balance = parent.rchild.balance + 2;
+					parent.rchild.rchild.balance = parent.rchild.rchild.balance - 2;
+					parent.rchild.rchild.lchild.balance = parent.rchild.rchild.lchild.balance - 1;
+				}else if(parent.rchild.rchild.lchild.balance==-1){
+					parent.rchild.balance = parent.rchild.balance + 3;
+					parent.rchild.rchild.balance = parent.rchild.rchild.balance - 1;
+					parent.rchild.rchild.lchild.balance = parent.rchild.rchild.lchild.balance + 1;
+				}
+				/*********** 调节节点位置 **********/
+				Node temp = parent.rchild.rchild.lchild;
+				parent.rchild.rchild.lchild = temp.rchild;
+				temp.rchild = parent.rchild.rchild;
+				parent.rchild.rchild = temp.lchild;
+				temp.lchild = parent.rchild;
+				parent.rchild = temp;
+			}else{
+				
+			}
+		}
+	}
+	
 	public void printTree(Node node){
 		if(node==null)return;  
 		printTree(node.lchild);
-		System.out.print(node.data+":");
+		if(node.data==getRoot().data){
+			System.out.print("["+node.data+"]:");
+		}else{
+			System.out.print(node.data+":");
+		}
 		printTree(node.rchild);
 	}
 	public static void main(String[] args) {
 		AVLTree bst = new AVLTree();
-		int[] data = {30,17,23,20,18,19,15,16,13,36,26,35};
+//		int[] data = {30,17,23,20,18,19,15,16,13,36,26,35};
+		int[] data = {30,17,23,20,26,18,19};
 		for(int i=0;i<data.length;i++){
 			System.out.print(data[i]+":");
 			bst.insert(data[i]);
@@ -254,7 +463,7 @@ public class AVLTree {
 		bst.printTree(bst.getRoot());
 		System.out.println();
 		System.out.println(bst.isExist(23));
-		System.out.println(bst.delete(18));
+		System.out.println(bst.delete(30));
 		bst.printTree(bst.getRoot());
 		System.out.println();
 	}
