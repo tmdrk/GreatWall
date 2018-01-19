@@ -454,7 +454,7 @@ public class AVLTree {
 	public static void main(String[] args) {
 		AVLTree bst = new AVLTree();
 //		int[] data = {30,17,23,20,18,19,15,16,13,36,26,35};
-		int[] data = {30,17,23,20,26,18,19};
+		int[] data = {30,17,23,20,15,22,19};
 		for(int i=0;i<data.length;i++){
 			System.out.print(data[i]+":");
 			bst.insert(data[i]);
