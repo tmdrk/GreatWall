@@ -90,7 +90,7 @@ public class AVLTree {
 				}
 				if(needChange){
 					if(parent.lchild.balance!=0){
-						parent.balance=parent.balance+Math.abs(parent.lchild.balance);
+						parent.balance=parent.balance+1;
 					}else{
 						/********如果插入后父节点平衡因子为0，则递归返回都不用再调整*******/
 						needChange = false;
@@ -117,7 +117,7 @@ public class AVLTree {
 				}
 				if(needChange){
 					if(parent.rchild.balance!=0){
-						parent.balance=parent.balance-Math.abs(parent.rchild.balance);
+						parent.balance=parent.balance-1;
 					}else{
 						/********如果插入后父节点平衡因子为0，则递归返回都不用再调整*******/
 						needChange = false;
@@ -127,9 +127,9 @@ public class AVLTree {
 			}
 		}
 	}
-
 	public Node delete(int v){
 		size--;
+		needChange=true;
 		Node retNode = delete(sentinel,true,v);
 		return retNode;
 	}
@@ -142,10 +142,10 @@ public class AVLTree {
 	 * @author zhoujie
 	 * @date 2018年1月18日 下午5:57:18
 	 */
-	public Node delete(Node parent,boolean isleft,int v){
+	public Node delete(Node parent,boolean isLeft,int v){
 		Node retNode = null;
 		Node node;
-		if(isleft){
+		if(isLeft){
 			Assert.notNull(parent.lchild, "删除的节点不存在");
 			node = parent.lchild;
 			if(node.data>v){
@@ -157,6 +157,7 @@ public class AVLTree {
 					Node temp = delMinNode(node);
 					temp.lchild = parent.lchild.lchild;
 					temp.rchild = parent.lchild.rchild;
+					temp.balance = parent.lchild.balance;
 					parent.lchild = temp;
 					retNode = node;
 				}else{
@@ -165,7 +166,22 @@ public class AVLTree {
 					}else{
 						parent.lchild = node.lchild;
 					}
+					parent.balance = parent.balance-1;
 					retNode = node;
+				}
+				return retNode;
+			}
+			if(parent.lchild.balance==2){
+				leftBalance(parent, isLeft);
+			}else if(parent.lchild.balance==-2){
+				rightBalance(parent, isLeft);
+			}
+			if(needChange){
+				if(parent.lchild.balance!=0){
+					/********如果插入后父节点平衡因子不为0，则递归返回都不用再调整*******/
+					needChange = false;
+				}else{
+					parent.balance=parent.balance-1;
 				}
 			}
 		}else{
@@ -180,6 +196,7 @@ public class AVLTree {
 					Node temp = delMinNode(node);
 					temp.lchild = parent.rchild.lchild;
 					temp.rchild = parent.rchild.rchild;
+					temp.balance = parent.rchild.balance;
 					parent.rchild = temp;
 					retNode = node;
 				}else{
@@ -188,7 +205,22 @@ public class AVLTree {
 					}else{
 						parent.rchild = node.lchild;
 					}
+					parent.balance = parent.balance+1;
 					retNode = node;
+				}
+				return retNode;
+			}
+			if(parent.rchild.balance==2){
+				leftBalance(parent, isLeft);
+			}else if(parent.rchild.balance==-2){
+				rightBalance(parent, isLeft);
+			}
+			if(needChange){
+				if(parent.rchild.balance!=0){
+					/********如果插入后父节点平衡因子不为0，则递归返回都不用再调整*******/
+					needChange = false;
+				}else{
+					parent.balance=parent.balance+1;
 				}
 			}
 		}
@@ -215,20 +247,47 @@ public class AVLTree {
 	 * @date 2018年1月12日 下午1:54:42
 	 */
 	private Node delMinNode(Node node){
+		needChange=true;
 		if(node.rchild.lchild==null){
 			Node temp = node.rchild;
 			node.rchild = temp.rchild;
+			node.balance = node.balance+1;
 			return temp;
 		}
-		return delMinNode_(node.rchild);
+		Node retNode = delMinNode_(node.rchild);
+		if(node.rchild.balance==-2){
+			rightBalance(node, false);
+		}
+		if(needChange){
+			if(node.lchild.balance!=0){
+				/********如果删除后父节点平衡因子不为0，则递归返回都不用再调整*******/
+				needChange = false;
+			}else{
+				node.balance=node.balance-1;
+			}
+		}
+		return retNode;
 	}
 	private Node delMinNode_(Node node){
 		if(node.lchild.lchild==null){
 			Node temp = node.lchild;
 			node.lchild = temp.rchild;
+			node.balance = node.balance-1;
 			return temp;
 		}
-		return delMinNode_(node.lchild);
+		Node retNode = delMinNode_(node.lchild);
+		if(node.lchild.balance==-2){
+			rightBalance(node, true);
+		}
+		if(needChange){
+			if(node.lchild.balance!=0){
+				/********如果插入后父节点平衡因子不为0，则递归返回都不用再调整*******/
+				needChange = false;
+			}else{
+				node.balance=node.balance-1;
+			}
+		}
+		return retNode;
 	}
 	/**
 	 * 返回该节点最右子树
@@ -475,18 +534,19 @@ public class AVLTree {
 	
 	public void printTree(Node node){
 		if(node==null)return;  
-		printTree(node.lchild);
 		if(node.data==getRoot().data){
 			System.out.print("["+node.data+":"+node.balance+"];");
 		}else{
 			System.out.print(node.data+":"+node.balance+";");
 		}
+		printTree(node.lchild);
 		printTree(node.rchild);
 	}
 	public static void main(String[] args) {
 		AVLTree bst = new AVLTree();
-		int[] data = {30,17,23,20,18,19,15,16,13,36,26,35};
-//		int[] data = {30,17,23,20,15,22};
+//		int[] data = {30,17,23,20,18,19,15,16,13,36,26,35};
+//		int[] data = {30,17,23,20,15};
+		int[] data = {20,15,30,16,13,26,35,25,32,38,14,40};
 		for(int i=0;i<data.length;i++){
 			System.out.print(data[i]+":");
 			bst.insert(data[i]);
@@ -495,7 +555,7 @@ public class AVLTree {
 		bst.printTree(bst.getRoot());
 		System.out.println();
 		System.out.println(bst.isExist(23));
-		System.out.println(bst.delete(13));
+		System.out.println(bst.delete(20));
 		bst.printTree(bst.getRoot());
 		System.out.println();
 	}
