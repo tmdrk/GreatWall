@@ -1,7 +1,5 @@
 package com.test.dataStructures.tree.BTree;
 
-import com.test.dataStructures.tree.bst.BinarySortTree2.Node;
-
 /**
  * BUnderscodeTree树
  * m 阶B_树满足或空，或为满足下列性质的m叉树：
