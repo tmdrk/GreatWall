@@ -1,10 +1,9 @@
 package com.test.dataStructures.tree.bst;
 
 import com.test.common.util.Assert;
-import com.test.dataStructures.tree.avl.AVLTree;
-import com.test.dataStructures.tree.avl.AVLTree.Node;
 
-public class BinarySortTree2 {
+@SuppressWarnings({"rawtypes","hiding","unchecked"})
+public class BinarySortTree2<E> {
 	public BinarySortTree2(){
 		
 	}
@@ -12,28 +11,31 @@ public class BinarySortTree2 {
 	Node sentinel = new Node();
 	/** 树容量 **/
 	int size = 0;
-	public class Node {
-		int data;
+	public class Node<E> {
+		E data;
 		Node lchild;
 		Node rchild;
 		public int height;//当前结点的高度
 		public Node(){
-			this(0);
+			this(null);
 		}
-		public Node(int v){
-			this(null,null,v);
+		public Node(E data){
+			this(null,null,data);
 		}
-		public Node(Node lchild,Node rchild,int v){
-			this(lchild,rchild,v,0);
+		public Node(Node lchild,Node rchild,E data){
+			this(lchild,rchild,data,0);
 		}
-		public Node(Node lchild,Node rchild,int v,int height){
+		public Node(Node lchild,Node rchild,E data,int height){
 			this.lchild = lchild;
 			this.rchild = rchild;
-			this.data = v;
+			this.data = data;
 			this.height = height;
 		}
 		public String toString(){
 			return "data="+data+" lchild data="+(lchild==null?"null":String.valueOf(lchild.data))+" rchild data="+(rchild==null?"null":String.valueOf(rchild.data));
+		}
+		public int compare(E data){
+			return ((Comparable<? super E>)this.data).compareTo(data);
 		}
 //		public int compare(int v){
 //			if(v>this.data){
@@ -48,29 +50,29 @@ public class BinarySortTree2 {
 	public Node getRoot(){
 		return sentinel.lchild;
 	}
-	public boolean isExist(int v){
+	public boolean isExist(E v){
 		return isExist(getRoot(),v);
 	}
-	public boolean isExist(Node node,int v){
+	public boolean isExist(Node node,E v){
 		if(node==null){
 			return false;
 		}
-		if(node.data==v){
+		if(node.compare(v)==0){
 			return true;
 		}
 		return isExist(node.lchild,v)||isExist(node.rchild,v);
 	}
-	public boolean insert(int v){
+	public boolean insert(E v){
 		size++;
 		return insert(sentinel,true,v);
 	}
-	public boolean insert(Node parent,Boolean isLeft,int v){
+	public boolean insert(Node parent,Boolean isLeft,E v){
 		if(isLeft){
 			if(parent.lchild==null){
 				parent.lchild = new Node(v);
 				return true;
 			}else{
-				if(parent.lchild.data>=v){
+				if(parent.lchild.compare(v)>=0){
 					return insert(parent.lchild,true,v);
 				}else{
 					return insert(parent.lchild,false,v);
@@ -81,7 +83,7 @@ public class BinarySortTree2 {
 				parent.rchild = new Node(v);
 				return true;
 			}else{
-				if(parent.rchild.data>=v){
+				if(parent.rchild.compare(v)>=0){
 					return insert(parent.rchild,true,v);
 				}else{
 					return insert(parent.rchild,false,v);
@@ -104,26 +106,26 @@ public class BinarySortTree2 {
 //			}
 //		}
 	}
-	public void add(int v){
+	public void add(E v){
 		add(sentinel,true,v);
 	}
-	public void add(Node parent,boolean isleft,int v){
+	public void add(Node parent,boolean isleft,E v){
 		
 	}
-	public Node delete(int v){
+	public Node delete(E v){
 		size--;
 		Node retNode = delete(sentinel,true,v);
 		return retNode;
 	}
-	public Node delete(Node parent,boolean isleft,int v){
+	public Node delete(Node parent,boolean isleft,E v){
 		Node retNode = null;
 		Node node;
 		if(isleft){
 			Assert.notNull(parent.lchild, "删除的节点不存在");
 			node = parent.lchild;
-			if(node.data>v){
+			if(node.compare(v)>0){
 				retNode = delete(parent.lchild,true,v);
-			}else if(node.data<v){
+			}else if(node.compare(v)<0){
 				retNode = delete(parent.lchild,false,v);
 			}else{
 				if(node.lchild!=null&&node.rchild!=null){
@@ -144,9 +146,9 @@ public class BinarySortTree2 {
 		}else{
 			Assert.notNull(parent.rchild, "删除的节点不存在");
 			node = parent.rchild;
-			if(node.data>v){
+			if(node.compare(v)>0){
 				retNode = delete(parent.rchild,true,v);
-			}else if(node.data<v){
+			}else if(node.compare(v)<0){
 				retNode = delete(parent.rchild,false,v);
 			}else{
 				if(node.lchild!=null&&node.rchild!=null){
@@ -270,9 +272,24 @@ public class BinarySortTree2 {
 		}
 		printTree(node.rchild);
 	}
+//	public static void main(String[] args) {
+//		BinarySortTree2 bst = new BinarySortTree2();
+//		int[] data = {30,17,23,20,18,19,15,16,13,36,26,35};
+//		for(int i=0;i<data.length;i++){
+//			System.out.print(data[i]+":");
+//			bst.insert(data[i]);
+//		}
+//		System.out.println("大小:"+bst.size);
+//		bst.printTree(bst.getRoot());
+//		System.out.println();
+//		System.out.println(bst.isExist(23));
+//		System.out.println(bst.delete(30));
+//		bst.printTree(bst.getRoot());
+//		System.out.println();
+//	}
 	public static void main(String[] args) {
-		BinarySortTree2 bst = new BinarySortTree2();
-		int[] data = {30,17,23,20,18,19,15,16,13,36,26,35};
+		BinarySortTree2<String> bst = new BinarySortTree2<String>();
+		String[] data = {"30","17","23","20","18","19","15","16","13","36","26","35","202","102","305"};
 		for(int i=0;i<data.length;i++){
 			System.out.print(data[i]+":");
 			bst.insert(data[i]);
@@ -280,8 +297,8 @@ public class BinarySortTree2 {
 		System.out.println("大小:"+bst.size);
 		bst.printTree(bst.getRoot());
 		System.out.println();
-		System.out.println(bst.isExist(23));
-		System.out.println(bst.delete(30));
+		System.out.println(bst.isExist("23"));
+		System.out.println(bst.delete("30"));
 		bst.printTree(bst.getRoot());
 		System.out.println();
 	}

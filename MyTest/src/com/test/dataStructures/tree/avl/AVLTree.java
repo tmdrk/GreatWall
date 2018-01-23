@@ -128,9 +128,11 @@ public class AVLTree {
 		}
 	}
 	public Node delete(int v){
-		size--;
 		needChange=true;
 		Node retNode = delete(sentinel,true,v);
+		if(retNode!=null){
+			size--;
+		}
 		return retNode;
 	}
 	/**
@@ -146,7 +148,10 @@ public class AVLTree {
 		Node retNode = null;
 		Node node;
 		if(isLeft){
-			Assert.notNull(parent.lchild, "删除的节点不存在");
+//			Assert.notNull(parent.lchild, "删除的节点不存在");
+			if(parent.lchild==null){
+				return retNode;
+			}
 			node = parent.lchild;
 			if(node.data>v){
 				retNode = delete(parent.lchild,true,v);
@@ -185,7 +190,10 @@ public class AVLTree {
 				}
 			}
 		}else{
-			Assert.notNull(parent.rchild, "删除的节点不存在");
+//			Assert.notNull(parent.rchild, "删除的节点不存在");
+			if(parent.rchild==null){
+				return retNode;
+			}
 			node = parent.rchild;
 			if(node.data>v){
 				retNode = delete(parent.rchild,true,v);
@@ -352,6 +360,104 @@ public class AVLTree {
 			}
 		}
 	}
+	
+	/**
+	 * 
+	 * @param parent
+	 * @param isLeft
+	 * @author zhoujie
+	 * @date 2018年1月22日 下午2:47:41
+	 */
+	public void LLRotate(Node parent,Boolean isLeft){
+		if(isLeft){
+			Node temp = parent.lchild.lchild;
+			parent.lchild.lchild = temp.rchild;
+			temp.rchild = parent.lchild;
+			parent.lchild = temp;
+		}else{
+			Node temp = parent.rchild.lchild;
+			parent.rchild.lchild = temp.rchild;
+			temp.rchild = parent.rchild;
+			parent.rchild = temp;
+		}
+	}
+	/**
+	 * 
+	 * @param parent
+	 * @param isLeft
+	 * @author zhoujie
+	 * @date 2018年1月22日 下午2:47:54
+	 */
+	public void LRRotate(Node parent,Boolean isLeft){
+		if(isLeft){
+			Node temp = parent.lchild.lchild.rchild;
+			parent.lchild.lchild.rchild = temp.lchild;
+			temp.lchild = parent.lchild.lchild;
+			parent.lchild.lchild = temp.rchild;
+			temp.rchild = parent.lchild;
+			parent.lchild = temp;
+		}else{
+			Node temp = parent.rchild.lchild.rchild;
+			parent.rchild.lchild.rchild = temp.lchild;
+			temp.lchild = parent.rchild.lchild;
+			parent.rchild.lchild = temp.rchild;
+			temp.rchild = parent.rchild;
+			parent.rchild = temp;
+		}
+	}
+	/**
+	 * 
+	 * @param parent
+	 * @param isLeft
+	 * @author zhoujie
+	 * @date 2018年1月22日 下午2:47:58
+	 */
+	public void RRRotate(Node parent,Boolean isLeft){
+		if(isLeft){
+			Node temp = parent.lchild.rchild;
+			parent.lchild.rchild = temp.lchild;
+			temp.lchild = parent.lchild;
+			parent.lchild = temp;
+		}else{
+			Node temp = parent.rchild.rchild;
+			parent.rchild.rchild = temp.lchild;
+			temp.lchild = parent.rchild;
+			parent.rchild = temp;
+		}
+	}
+	/**
+	 * 
+	 * @param parent
+	 * @param isLeft
+	 * @author zhoujie
+	 * @date 2018年1月22日 下午2:48:06
+	 */
+	public void RLRotate(Node parent,Boolean isLeft){
+		if(isLeft){
+			Node temp = parent.lchild.rchild.lchild;
+			parent.lchild.rchild.lchild = temp.rchild;
+			temp.rchild = parent.lchild.rchild;
+			parent.lchild.rchild = temp.lchild;
+			temp.lchild = parent.lchild;
+			parent.lchild = temp;
+		}else{
+			Node temp = parent.rchild.rchild.lchild;
+			parent.rchild.rchild.lchild = temp.rchild;
+			temp.rchild = parent.rchild.rchild;
+			parent.rchild.rchild = temp.lchild;
+			temp.lchild = parent.rchild;
+			parent.rchild = temp;
+		}
+	}
+	
+	/**
+	 * 做左不平衡操作
+	 * @param parent
+	 * @param isLeft
+	 * @return
+	 * @author zhoujie
+	 * @date 2018年1月22日 下午2:51:21
+	 */
 	public int leftBalance(Node parent,Boolean isLeft){
 		if(isLeft){
 			if(parent.lchild.lchild.balance==1){
@@ -359,11 +465,7 @@ public class AVLTree {
 				parent.lchild.balance = parent.lchild.balance - 2;
 				parent.lchild.lchild.balance = parent.lchild.lchild.balance - 1;
 				/*********** 调节节点位置 **********/
-				Node temp = parent.lchild.lchild;
-				parent.lchild.lchild = temp.rchild;
-				temp.rchild = parent.lchild;
-				parent.lchild = temp;
-				
+				LLRotate(parent,isLeft);
 			}else if(parent.lchild.lchild.balance==-1){
 				/*********** 调节平衡因子 **********/
 				if(parent.lchild.lchild.rchild.balance==0){
@@ -379,21 +481,13 @@ public class AVLTree {
 					parent.lchild.lchild.rchild.balance = parent.lchild.lchild.rchild.balance + 1;
 				}
 				/*********** 调节节点位置 **********/
-				Node temp = parent.lchild.lchild.rchild;
-				parent.lchild.lchild.rchild = temp.lchild;
-				temp.lchild = parent.lchild.lchild;
-				parent.lchild.lchild = temp.rchild;
-				temp.rchild = parent.lchild;
-				parent.lchild = temp;
+				LRRotate(parent,isLeft);
 			}else if(parent.lchild.lchild.balance==0){
 				/*********** 调节平衡因子 **********/
 				parent.lchild.balance = parent.lchild.balance - 1;
 				parent.lchild.lchild.balance = parent.lchild.lchild.balance - 1;
 				/*********** 调节节点位置 **********/
-				Node temp = parent.lchild.lchild;
-				parent.lchild.lchild = temp.rchild;
-				temp.rchild = parent.lchild;
-				parent.lchild = temp;
+				LLRotate(parent,isLeft);
 			}
 			return parent.lchild.balance;
 		}else{
@@ -402,11 +496,7 @@ public class AVLTree {
 				parent.rchild.balance = parent.rchild.balance - 2;
 				parent.rchild.lchild.balance = parent.rchild.lchild.balance - 1;
 				/*********** 调节节点位置 **********/
-				Node temp = parent.rchild.lchild;
-				parent.rchild.lchild = temp.rchild;
-				temp.rchild = parent.rchild;
-				parent.rchild = temp;
-				
+				LLRotate(parent,isLeft);
 			}else if(parent.rchild.lchild.balance==-1){
 				/*********** 调节平衡因子 **********/
 				if(parent.rchild.lchild.rchild.balance==0){
@@ -422,26 +512,26 @@ public class AVLTree {
 					parent.rchild.lchild.rchild.balance = parent.rchild.lchild.rchild.balance + 1;
 				}
 				/*********** 调节节点位置 **********/
-				Node temp = parent.rchild.lchild.rchild;
-				parent.rchild.lchild.rchild = temp.lchild;
-				temp.lchild = parent.rchild.lchild;
-				parent.rchild.lchild = temp.rchild;
-				temp.rchild = parent.rchild;
-				parent.rchild = temp;
+				LRRotate(parent,isLeft);
 			}else if(parent.rchild.lchild.balance==0){
 				/*********** 调节平衡因子 **********/
 				parent.rchild.balance = parent.rchild.balance - 1;
 				parent.rchild.lchild.balance = parent.rchild.lchild.balance - 1;
 				/*********** 调节节点位置 **********/
-				Node temp = parent.rchild.lchild;
-				parent.rchild.lchild = temp.rchild;
-				temp.rchild = parent.rchild;
-				parent.rchild = temp;
+				LLRotate(parent,isLeft);
 			}
 			return parent.rchild.balance;
 		}
 	}
 	
+	/**
+	 * 做右不平衡操作
+	 * @param parent
+	 * @param isLeft
+	 * @return
+	 * @author zhoujie
+	 * @date 2018年1月22日 下午2:51:55
+	 */
 	public int rightBalance(Node parent,Boolean isLeft){
 		if(isLeft){
 			if(parent.lchild.rchild.balance==-1){
@@ -449,10 +539,7 @@ public class AVLTree {
 				parent.lchild.balance = parent.lchild.balance + 2;
 				parent.lchild.rchild.balance = parent.lchild.rchild.balance + 1;
 				/*********** 调节节点位置 **********/
-				Node temp = parent.lchild.rchild;
-				parent.lchild.rchild = temp.lchild;
-				temp.lchild = parent.lchild;
-				parent.lchild = temp;
+				RRRotate(parent,isLeft);
 				
 			}else if(parent.lchild.rchild.balance==1){
 				/*********** 调节平衡因子 **********/
@@ -469,21 +556,13 @@ public class AVLTree {
 					parent.lchild.rchild.lchild.balance = parent.lchild.rchild.lchild.balance + 1;
 				}
 				/*********** 调节节点位置 **********/
-				Node temp = parent.lchild.rchild.lchild;
-				parent.lchild.rchild.lchild = temp.rchild;
-				temp.rchild = parent.lchild.rchild;
-				parent.lchild.rchild = temp.lchild;
-				temp.lchild = parent.lchild;
-				parent.lchild = temp;
+				RLRotate(parent,isLeft);
 			}else if(parent.lchild.rchild.balance==0){
 				/*********** 调节平衡因子 **********/
 				parent.lchild.balance = parent.lchild.balance + 1;
 				parent.lchild.rchild.balance = parent.lchild.rchild.balance + 1;
 				/*********** 调节节点位置 **********/
-				Node temp = parent.lchild.rchild;
-				parent.lchild.rchild = temp.lchild;
-				temp.lchild = parent.lchild;
-				parent.lchild = temp;
+				RRRotate(parent,isLeft);
 			}
 			return parent.lchild.balance;
 		}else{
@@ -492,11 +571,7 @@ public class AVLTree {
 				parent.rchild.balance = parent.rchild.balance + 2;
 				parent.rchild.rchild.balance = parent.rchild.rchild.balance + 1;
 				/*********** 调节节点位置 **********/
-				Node temp = parent.rchild.rchild;
-				parent.rchild.rchild = temp.lchild;
-				temp.lchild = parent.rchild;
-				parent.rchild = temp;
-				
+				RRRotate(parent,isLeft);
 			}else if(parent.rchild.rchild.balance==1){
 				/*********** 调节平衡因子 **********/
 				if(parent.rchild.rchild.lchild.balance==0){
@@ -512,21 +587,13 @@ public class AVLTree {
 					parent.rchild.rchild.lchild.balance = parent.rchild.rchild.lchild.balance + 1;
 				}
 				/*********** 调节节点位置 **********/
-				Node temp = parent.rchild.rchild.lchild;
-				parent.rchild.rchild.lchild = temp.rchild;
-				temp.rchild = parent.rchild.rchild;
-				parent.rchild.rchild = temp.lchild;
-				temp.lchild = parent.rchild;
-				parent.rchild = temp;
+				RLRotate(parent,isLeft);
 			}else if(parent.rchild.rchild.balance==0){
 				/*********** 调节平衡因子 **********/
 				parent.rchild.balance = parent.rchild.balance + 1;
 				parent.rchild.rchild.balance = parent.rchild.rchild.balance + 1;
 				/*********** 调节节点位置 **********/
-				Node temp = parent.rchild.rchild;
-				parent.rchild.rchild = temp.lchild;
-				temp.lchild = parent.rchild;
-				parent.rchild = temp;
+				RRRotate(parent,isLeft);
 			}
 			return parent.rchild.balance;
 		}
