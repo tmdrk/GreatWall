@@ -73,6 +73,7 @@ public class BUnderscodeTree {
 						int temp = parent.children[index].data[i];
 						parent.children[index].data[i] = ele;
 						ele = temp;
+						flag = false;
 					}
 				}else{
 					int temp = parent.children[index].data[i];
@@ -80,13 +81,25 @@ public class BUnderscodeTree {
 					ele = temp;
 				}
 			}
+			parent.children[index].data[parent.children[index].keyNumber] = ele;
 			parent.children[index].keyNumber++;
-			if(parent.children[index].keyNumber==m){
-				
+			if(parent.children[index].keyNumber==m){//关键字 大于b树阶数减1，需要分裂
+				Integer[] numbers = parent.children[index].data;
+				int middle = numbers.length/2;
+				Integer[] array1 = new Integer[1];
+				Integer[] array2 = new Integer[middle];
+				Integer[] array3 = new Integer[numbers.length%2==0?middle-1:middle];
+				System.arraycopy(numbers, middle, array1, 0,1);
+				System.arraycopy(numbers, 0, array2, 0, array2.length);
+				System.arraycopy(numbers, middle+1, array3, 0, array3.length);
+				printArray("a",array1);
+				printArray("b",array2);
+				printArray("c",array3);
 			}
 			result = true;
 		}else{
 			result = add(parent.children[index],getIndex(parent.children[index],ele),ele);
+			
 		}
 		return result;
 	}
@@ -112,9 +125,27 @@ public class BUnderscodeTree {
 		Node n = but.new Node(3);
 //		int s = n.data[1];
 //		System.out.println(n.data[0]+"|"+n.data[1]+"|"+s);
-		int[] arr = new int[]{12,23,45,10,22};
+		int[] arr = new int[]{12,23,15,13,22,17,25};
 		for(int i=0;i<arr.length;i++){
 			but.add(arr[i]);
 		}
+//		int[] numbers = new int[]{12,13,15};
+//		int middle = numbers.length/2;
+//		int[] array1 = new int[1];
+//		int[] array2 = new int[middle];
+//		int[] array3 = new int[numbers.length%2==0?middle-1:middle];
+//		System.arraycopy(numbers, middle, array1, 0,1);
+//		System.arraycopy(numbers, 0, array2, 0, array2.length);
+//		System.arraycopy(numbers, middle+1, array3, 0, array3.length);
+//		printArray("a",array1);
+//		printArray("b",array2);
+//		printArray("c",array3);
+	}
+	public static void printArray(String pre,Integer[] a){
+		System.out.print(pre+":");
+		for(Integer i:a){
+			System.out.print(i+",");
+		}
+		System.out.println();
 	}
 }
