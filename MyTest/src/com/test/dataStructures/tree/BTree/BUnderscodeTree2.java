@@ -151,13 +151,15 @@ public class BUnderscodeTree2 {
 			parent.children[0] = new Node(ele,parent);
 			result = true;
 		}else if(parent.children[index].children==null){
+			Node node = parent.children[index];
+			
 			/** 添加元素 **/
-			addTree(parent,index,ele);
+			addTree(node,ele);
 
 			/** 检查元素是否需要分裂 **/
-			if(parent.children[index].keyNumber==m){//关键字 大于b树阶数减1，需要分裂
-				if(parent.children[index].equals(getRoot())){//当前操作元素是根节点时分裂
-					Integer[] tempDatas = parent.children[index].data;
+			if(node.keyNumber==m){//关键字 大于b树阶数减1，需要分裂
+				if(node.equals(getRoot())){//当前操作元素是根节点时分裂
+					Integer[] tempDatas = node.data;
 					int middle = tempDatas.length/2;
 					Integer[] rootData = new Integer[m];
 					Integer[] leftData = new Integer[m];
@@ -165,67 +167,135 @@ public class BUnderscodeTree2 {
 					System.arraycopy(tempDatas, middle, rootData, 0,1);
 					System.arraycopy(tempDatas, 0, leftData, 0, middle);
 					System.arraycopy(tempDatas, middle+1, rightData, 0, m-(middle+1));
-					parent.children[index].keyNumber=1;
-					parent.children[index].data = rootData;
-					if(parent.children[index].children==null){
-						parent.children[index].children = new Node[m+1];
+					node.keyNumber=1;
+					node.data = rootData;
+					if(node.children==null){
+						node.children = new Node[m+1];
 						Node leftNode = new Node(leftData,middle);
 						Node rightNode = new Node(rightData,m-(middle+1));
-						parent.children[index].children[0] = leftNode;
-						parent.children[index].children[1] = rightNode;
+						node.children[0] = leftNode;
+						node.children[1] = rightNode;
 					}else{
-						Node[] tempNodes = parent.children[index].children;
+						Node[] tempNodes = node.children;
 						int middleNode = tempDatas.length/2;
 						Node[] leftNodes = new Node[m+1];
 						Node[] rightNodes = new Node[m+1];
 						System.arraycopy(tempNodes, 0, leftNodes, 0, middleNode);
 						System.arraycopy(tempNodes, middleNode+1, rightNodes, 0, m-(middleNode+1));
 						
-						Node leftNode = new Node(leftData,middle,parent.children[index],leftNodes);
-						Node rightNode = new Node(rightData,m-(middle+1),parent.children[index],rightNodes);
+						Node leftNode = new Node(leftData,middle,node,leftNodes);
+						Node rightNode = new Node(rightData,m-(middle+1),node,rightNodes);
 						Node[] pNode = new Node[m+1];
 						pNode[0] = leftNode;
 						pNode[1] = rightNode;
-						parent.children[index].children = pNode;
+						node.children = pNode;
+					}
+				}else{//当不平衡节点不为跟节点时
+					Integer[] tempDatas = node.data;
+					int middle = tempDatas.length/2;
+					Integer[] leftData = new Integer[m];
+					Integer[] rightData = new Integer[m];
+					System.arraycopy(tempDatas, 0, leftData, 0, middle);
+					System.arraycopy(tempDatas, middle+1, rightData, 0, m-(middle+1));
+					addTree(parent,tempDatas[middle]);
+					if(node.children==null){
+						Node leftNode = new Node(leftData,middle,parent);
+						Node rightNode = new Node(rightData,m-(middle+1),parent);
+						Node tempN = parent.children[index+1];
+						parent.children[index] = leftNode;
+						parent.children[index+1] = rightNode;
+						for(int i=index+1;i<parent.keyNumber;i++){
+							Node tn = parent.children[i+1];
+							parent.children[i+1]=tempN;
+							tempN = tn;
+						}
+					}else{
+						Node[] tempNodes = node.children;
+						int middleNode = tempDatas.length/2;
+						Node[] leftNodes = new Node[m+1];
+						Node[] rightNodes = new Node[m+1];
+						System.arraycopy(tempNodes, 0, leftNodes, 0, middleNode);
+						System.arraycopy(tempNodes, middleNode+1, rightNodes, 0, m-(middleNode+1));
+						
+						Node leftNode = new Node(leftData,middle,parent,leftNodes);
+						Node rightNode = new Node(rightData,m-(middle+1),parent,rightNodes);
+						Node tempN = parent.children[index+1];
+						parent.children[index] = leftNode;
+						parent.children[index+1] = rightNode;
+						for(int i=index+1;i<parent.keyNumber;i++){
+							Node tn = parent.children[i+1];
+							parent.children[i+1]=tempN;
+							tempN = tn;
+						}
 					}
 				}
 			}
 			result = true;
 		}else{
-			result = add(parent.children[index],getIndex(parent.children[index],ele),ele);
+			Node node = parent.children[index];
 			
-			if(parent.children[index].children==null){
-				Integer[] tempDatas = parent.children[index].data;
-				int middle = tempDatas.length/2;
-				Integer[] leftData = new Integer[m];
-				Integer[] rightData = new Integer[m];
-				System.arraycopy(tempDatas, 0, leftData, 0, middle);
-				System.arraycopy(tempDatas, middle+1, rightData, 0, m-(middle+1));
-				
-				int midDate = tempDatas[middle];
-				boolean flag = true;
-				for(int i=0;i<parent.keyNumber;i++){
-					if(flag){
-						if(parent.data[i]>midDate){
-							int temp = parent.data[i];
-							parent.data[i] = midDate;
-							midDate = temp;
-							flag = false;
-						}
+			result = add(node,getIndex(node,ele),ele);
+			
+			if(node.keyNumber==m){//关键字 大于b树阶数减1，需要分裂
+				if(node.equals(getRoot())){//当前操作元素是根节点时分裂
+					Integer[] tempDatas = node.data;
+					int middle = tempDatas.length/2;
+					Integer[] rootData = new Integer[m];
+					Integer[] leftData = new Integer[m];
+					Integer[] rightData = new Integer[m];
+					System.arraycopy(tempDatas, middle, rootData, 0,1);
+					System.arraycopy(tempDatas, 0, leftData, 0, middle);
+					System.arraycopy(tempDatas, middle+1, rightData, 0, m-(middle+1));
+					node.keyNumber=1;
+					node.data = rootData;
+					if(node.children==null){
+						node.children = new Node[m+1];
+						Node leftNode = new Node(leftData,middle);
+						Node rightNode = new Node(rightData,m-(middle+1));
+						node.children[0] = leftNode;
+						node.children[1] = rightNode;
 					}else{
-						int temp = parent.data[i];
-						parent.data[i] = ele;
-						ele = temp;
+						Node[] tempNodes = node.children;
+						int middleNode = (int) Math.ceil(tempNodes.length/2);
+						Node[] leftNodes = new Node[m+1];
+						Node[] rightNodes = new Node[m+1];
+						System.arraycopy(tempNodes, 0, leftNodes, 0, middleNode);
+						System.arraycopy(tempNodes, middleNode, rightNodes, 0, m+1-middleNode);
+						
+						Node leftNode = new Node(leftData,middle,node,leftNodes);
+						Node rightNode = new Node(rightData,m-(middle+1),node,rightNodes);
+						Node[] pNode = new Node[m+1];
+						pNode[0] = leftNode;
+						pNode[1] = rightNode;
+						node.children = pNode;
+					}
+				}else{//当不平衡节点不为跟节点时
+					Integer[] tempDatas = node.data;
+					int middle = tempDatas.length/2;
+					Integer[] leftData = new Integer[m];
+					Integer[] rightData = new Integer[m];
+					System.arraycopy(tempDatas, 0, leftData, 0, middle);
+					System.arraycopy(tempDatas, middle+1, rightData, 0, m-(middle+1));
+					addTree(parent,tempDatas[middle]);
+					if(node.children==null){
+						Node leftNode = new Node(leftData,middle,parent);
+						Node rightNode = new Node(rightData,m-(middle+1),parent);
+						parent.children[index] = leftNode;
+						parent.children[index+1] = rightNode;
+					}else{
+						Node[] tempNodes = node.children;
+						int middleNode = (int) Math.ceil(tempNodes.length/2);
+						Node[] leftNodes = new Node[m+1];
+						Node[] rightNodes = new Node[m+1];
+						System.arraycopy(tempNodes, 0, leftNodes, 0, middleNode);
+						System.arraycopy(tempNodes, middleNode, rightNodes, 0, m+1-middleNode);
+						
+						Node leftNode = new Node(leftData,middle,parent,leftNodes);
+						Node rightNode = new Node(rightData,m-(middle+1),parent,rightNodes);
+						parent.children[index] = leftNode;
+						parent.children[index+1] = rightNode;
 					}
 				}
-				parent.data[parent.keyNumber]=ele;
-				parent.keyNumber++;
-				
-				Node leftNode = new Node(leftData,middle);
-				Node rightNode = new Node(rightData,m-(middle+1));
-
-			}else{
-				
 			}
 		}
 		return result;
@@ -239,34 +309,34 @@ public class BUnderscodeTree2 {
 	 * @author zhoujie
 	 * @date 2018年1月25日 上午11:57:25
 	 */
-	public void addTree(Node parent,int index,int ele){
+	public void addTree(Node node,int ele){
 		boolean flag = true;
-		for(int i=0;i<parent.children[index].keyNumber;i++){
+		for(int i=0;i<node.keyNumber;i++){
 			if(flag){
-				if(parent.children[index].data[i]>ele){
-					int temp = parent.children[index].data[i];
-					parent.children[index].data[i] = ele;
+				if(node.data[i]>ele){
+					int temp = node.data[i];
+					node.data[i] = ele;
 					ele = temp;
 					flag = false;
 				}
 			}else{
-				int temp = parent.children[index].data[i];
-				parent.children[index].data[i] = ele;
+				int temp = node.data[i];
+				node.data[i] = ele;
 				ele = temp;
 			}
 		}
-		parent.children[index].data[parent.children[index].keyNumber] = ele;
-		parent.children[index].keyNumber++;
+		node.data[node.keyNumber] = ele;
+		node.keyNumber++;
 	}
 	
 	public static void main(String[] args) {
 		BUnderscodeTree2 but = new BUnderscodeTree2();
 		Node n = but.new Node(3);
-		Integer[] arr = new Integer[]{12,23,15};
+		Integer[] arr = new Integer[]{12,23,15,9,10,26,28,27,30,8,4,16,33,20,22};
 		for(int i=0;i<arr.length;i++){
 			but.add(arr[i]);
 		}
-		Node node = but.getNode(22);
+//		Node node = but.getNode(22);
 		System.out.println(but.getRoot());
 		System.out.println(JSON.toJSONString(but.getRoot(),true));
 	}
