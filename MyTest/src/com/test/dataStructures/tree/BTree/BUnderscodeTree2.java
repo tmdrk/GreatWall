@@ -16,12 +16,18 @@ import com.alibaba.fastjson.JSON;
  * @date 2018年1月23日 上午11:42:39
  */
 public class BUnderscodeTree2 {
+	public BUnderscodeTree2(){
+		this(3);
+	}
+	public BUnderscodeTree2(int m){
+		this.m=m;
+	}
 	/** 哨兵 **/
 	Node sentinel = new Node();
 	/** 树容量 **/
 	int size = 0;
 	/** B树的阶数 **/
-	public static final int m = 3;
+	public final int m;
 	public class Node {
 		/** 关键字个数 **/
 		int keyNumber;
@@ -269,32 +275,74 @@ public class BUnderscodeTree2 {
 		return retNode;
 	}
 	public Node delete(Node parent,int index,int ele){
-		if(parent.children[index]==null){
+		Node node = parent.children[index];
+		if(node==null){
 			return null;
 		}
-		Node temp=null;
-		int tempIndex;
-		for(int i=0;i<parent.children[index].keyNumber;i++){
-			if(parent.children[index].data[i]==ele){
-				temp = parent.children[index];
+		boolean isNow=false;
+		int tempIndex=0;
+		for(int i=0;i<node.keyNumber;i++){
+			if(node.data[i]==ele){
+				isNow = true;
 				tempIndex = i;
 			}
 		}
-		if(temp==null){
-			Node ret = delete(parent.children[index],getIndex(parent.children[index],ele),ele);
-			
-			return ret;
-		}else{
-			if(parent.children[index].children==null){
-				
+		if(isNow){
+			if(node.children==null){
+				//被删除节点为根结点时
+				for(int i=tempIndex;i<node.keyNumber;i++){
+					node.data[i] = node.data[i+1];
+				}
+				node.keyNumber--;
+				//检查删除后节点是否符合B树要求
+				if(node.keyNumber>=getMinKey()){
+					//符合，无需操作
+					
+				}else{
+					//不符合
+					//校验父节点左右子树是否有非饥饿型节点，若有则从父节点借元素，父节点再从非饥饿型节点借元素
+					boolean unhunger = false;
+					boolean left = true;
+					if(index-1>=0){
+						Node lnode = parent.children[index-1];
+						if(lnode.keyNumber>getMinKey()){
+							unhunger = true;
+						}else{
+							if(index+1<parent.keyNumber){
+								Node rnode = parent.children[index+1];
+								if(rnode.keyNumber>getMinKey()){
+									unhunger = true;
+									left = false;
+								}
+							}
+						}
+					}
+					if(unhunger){
+						if(left){
+							
+						}else{
+							
+						}
+					}
+					//没有，则合并节点
+					
+				}
 			}else{
+				//被删除节点不为根结点时
 				
 			}
+		}else{
+			Node ret = delete(node,getIndex(node,ele),ele);
+			
+			return ret;
 		}
 		return null;
 	}
+	public int getMinKey(){
+		return  m%2==0?m/2-1:m/2;
+	}
 	public static void main(String[] args) {
-		BUnderscodeTree2 but = new BUnderscodeTree2();
+		BUnderscodeTree2 but = new BUnderscodeTree2(3);
 		Node n = but.new Node(3);
 		Integer[] arr = new Integer[]{12,23,15,13,22,14,25,17,19,6,8,2,5,18};
 		for(int i=0;i<arr.length;i++){
