@@ -332,9 +332,18 @@ public class BUnderscodeTree2 {
 	public int delRightChildMin(Node parent,int index){
 		Node node = parent.children[index];
 		if(node.children==null){
-			return node.data[0];
+			int ret = delData(node,0);
+			//检查删除后节点状态
+			if(!getRoot().equals(node)){
+				checkDelNode(parent,index);
+			}
+			return ret;
 		}
 		int ele = delRightChildMin(node,0);
+		//检查删除后节点状态
+		if(!getRoot().equals(node)){
+			checkDelNode(parent,index);
+		}
 		return ele;
 	}
 	public int minKeyNumber(){
@@ -359,10 +368,11 @@ public class BUnderscodeTree2 {
 		return ret;
 	}
 	public Node delChildNode(Node node,int index){
+		Node ret = node.children[index];
 		for(int i=index;i<node.keyNumber+1;i++){
 			node.children[i] = node.children[i+1];
 		}
-		return node.children[index];
+		return ret;
 	}
 	public int repData(Node node,int index,int ele){
 		int temp = node.data[index];
@@ -469,16 +479,16 @@ public class BUnderscodeTree2 {
 	public static void main(String[] args) {
 		BUnderscodeTree2 but = new BUnderscodeTree2(3);
 		Node n = but.new Node(3);
-//		Integer[] arr = new Integer[]{12,23,15,13,22,14,25,17,19,6,8,2,5,18};
-		Integer[] arr = new Integer[]{12,23,15};
+		Integer[] arr = new Integer[]{12,23,15,13,22,14,25,17,19,6,8,2,5,18,34,56,21,9,16,44,41,38,1,77,52,29,37,47};
+//		Integer[] arr = new Integer[]{12,23,15,13,22,14,25,17,19};
 		for(int i=0;i<arr.length;i++){
 			but.add(arr[i]);
 		}
 //		Node node = but.getNode(22);
 		System.out.println(but.getRoot());
 		System.out.println(JSON.toJSONString(but.getRoot(),true));
-//		but.delete(12);
-//		System.out.println(JSON.toJSONString(but.getRoot(),true));
+		but.delete(15);
+		System.out.println(JSON.toJSONString(but.getRoot(),true));
 //		but.delete(15);
 //		System.out.println(JSON.toJSONString(but.getRoot(),true));
 //		but.delete(23);
