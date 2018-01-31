@@ -11,6 +11,8 @@ import com.alibaba.fastjson.JSON;
  * (4) 有 s 个子树的非叶结点具有 n=s -1个关键字，结点的信息组织为:(n,A0,K1,A1,K2,A2 … Kn，An）
  *  这里：n:关键字的个数，ki（i=1,2,…,n)为关键字，且满足Ki<Ki+1,，Ai(i=0,1,..n)为指向子树的指针。
  * (5)所有的叶子结点都出现在同一层上，不带信息（可认为外部结点或失败结点）。
+ * 
+ * B树节点的状态有三种 full：代表节点有m棵子树   hunger：代表节点有[m/2]棵子树 unfull:代表节点有m-1到[m/2]+1棵子树
  * @ClassName: BUnderscodeTree 
  * @author zhoujie
  * @date 2018年1月23日 上午11:42:39
@@ -79,6 +81,9 @@ public class BUnderscodeTree2 {
 	 * @date 2018年1月23日 下午4:18:28
 	 */
 	public Node getRoot(){
+		if(sentinel.children==null){
+			return null;
+		}
 		return sentinel.children[0];
 	}
 	/**
@@ -147,7 +152,7 @@ public class BUnderscodeTree2 {
 		}else if(parent.children[index].children==null){
 			Node node = parent.children[index];
 			/** 添加元素 **/
-			addTree(node,ele);
+			addData(node,ele);
 			/** 检查元素是否需要分裂 **/
 			checkNode(parent,index);
 			result = true;
@@ -168,18 +173,19 @@ public class BUnderscodeTree2 {
 	 * @author zhoujie
 	 * @date 2018年1月25日 上午11:57:25
 	 */
-	public void addTree(Node node,int ele){
+	public void addData(Node node,int ele){
 		boolean flag = true;
+		int temp;
 		for(int i=0;i<node.keyNumber;i++){
 			if(flag){
 				if(node.data[i]>ele){
-					int temp = node.data[i];
+					temp = node.data[i];
 					node.data[i] = ele;
 					ele = temp;
 					flag = false;
 				}
 			}else{
-				int temp = node.data[i];
+				temp = node.data[i];
 				node.data[i] = ele;
 				ele = temp;
 			}
@@ -235,7 +241,7 @@ public class BUnderscodeTree2 {
 				Integer[] rightData = new Integer[m];
 				System.arraycopy(tempDatas, 0, leftData, 0, middle);
 				System.arraycopy(tempDatas, middle+1, rightData, 0, m-(middle+1));
-				addTree(parent,tempDatas[middle]);
+				addData(parent,tempDatas[middle]);
 				if(node.children==null){
 					//不平衡节点孩子为空时，只需要将数据拆分为两部分，并赋给分裂后的左右节点
 					Node leftNode = new Node(leftData,middle);
@@ -272,85 +278,211 @@ public class BUnderscodeTree2 {
 	public Node delete(int ele){
 		size--;
 		Node retNode = delete(sentinel,0,ele);
+		if(getRoot()!=null&&getRoot().keyNumber==0){
+			if(getRoot().children==null){
+				sentinel.children = null;
+			}else{
+				sentinel.children[0]=getRoot().children[0];
+			}
+		}
 		return retNode;
 	}
 	public Node delete(Node parent,int index,int ele){
+		Node ret = null;
 		Node node = parent.children[index];
 		if(node==null){
 			return null;
 		}
-		boolean isNow=false;
+		boolean isCurrent=false;
 		int tempIndex=0;
 		for(int i=0;i<node.keyNumber;i++){
 			if(node.data[i]==ele){
-				isNow = true;
+				isCurrent = true;
 				tempIndex = i;
 			}
 		}
-		if(isNow){
+		if(isCurrent){
 			if(node.children==null){
-				//被删除节点为根结点时
-				for(int i=tempIndex;i<node.keyNumber;i++){
-					node.data[i] = node.data[i+1];
-				}
-				node.keyNumber--;
-				//检查删除后节点是否符合B树要求
-				if(node.keyNumber>=getMinKey()){
-					//符合，无需操作
-					
-				}else{
-					//不符合
-					//校验父节点左右子树是否有非饥饿型节点，若有则从父节点借元素，父节点再从非饥饿型节点借元素
-					boolean unhunger = false;
-					boolean left = true;
-					if(index-1>=0){
-						Node lnode = parent.children[index-1];
-						if(lnode.keyNumber>getMinKey()){
-							unhunger = true;
-						}else{
-							if(index+1<parent.keyNumber){
-								Node rnode = parent.children[index+1];
-								if(rnode.keyNumber>getMinKey()){
-									unhunger = true;
-									left = false;
-								}
-							}
-						}
-					}
-					if(unhunger){
-						if(left){
-							
-						}else{
-							
-						}
-					}
-					//没有，则合并节点
-					
+				//被删除节点为叶子结点时
+				delData(node, tempIndex);
+				//检查删除后节点状态
+				if(!getRoot().equals(node)){
+					checkDelNode(parent,index);
 				}
 			}else{
-				//被删除节点不为根结点时
-				
+				//被删除节点不为叶子结点时
+				//找到该节点右子树最小值，删除该值并返回
+				int delEle = delRightChildMin(node,tempIndex);
+				node.data[tempIndex]=delEle;
+				//检查删除后节点状态
+				if(!getRoot().equals(node)){
+					checkDelNode(parent,index);
+				}
 			}
 		}else{
-			Node ret = delete(node,getIndex(node,ele),ele);
-			
-			return ret;
+			ret = delete(node,getIndex(node,ele),ele);
+			//检查删除后节点状态
+			if(!getRoot().equals(node)){
+				checkDelNode(parent,index);
+			}
 		}
-		return null;
+		return ret;
 	}
-	public int getMinKey(){
+	
+	public int delRightChildMin(Node parent,int index){
+		Node node = parent.children[index];
+		if(node.children==null){
+			return node.data[0];
+		}
+		int ele = delRightChildMin(node,0);
+		return ele;
+	}
+	public int minKeyNumber(){
 		return  m%2==0?m/2-1:m/2;
+	}
+	
+	public void addChildNode(Node node,int index,Node child){
+		Node temp;
+		for(int i=index;i<node.keyNumber+1;i++){
+			temp = node.children[i];
+			node.children[i] = child;
+			child = temp;
+		}
+	}
+	
+	public int delData(Node node,int index){
+		int ret = node.data[index];
+		for(int i=index;i<node.keyNumber;i++){
+			node.data[i] = node.data[i+1];
+		}
+		node.keyNumber--;
+		return ret;
+	}
+	public Node delChildNode(Node node,int index){
+		for(int i=index;i<node.keyNumber+1;i++){
+			node.children[i] = node.children[i+1];
+		}
+		return node.children[index];
+	}
+	public int repData(Node node,int index,int ele){
+		int temp = node.data[index];
+		node.data[index]=ele;
+		return temp;
+	}
+	
+	/**
+	 * 检查删除后节点状态
+	 * @param parent
+	 * @param index
+	 * @author zhoujie
+	 * @date 2018年1月31日 下午6:08:44
+	 */
+	public void checkDelNode(Node parent,int index){
+		Node node = parent.children[index];
+		//检查删除后节点是否符合B树要求
+		if(node.keyNumber<minKeyNumber()){
+			//不符合
+			//校验父节点左右子树是否有非hunger型节点，若有则从父节点借元素，父节点再从非hunger型节点借元素
+			boolean left = false;
+			boolean right = false;
+			int leftKey = 0;
+			int rightKey = 0;
+			//检查左边是否有非hunger型节点
+			Node lnode = null;
+			if(index-1>=0){
+				lnode = parent.children[index-1];
+				if(lnode.keyNumber>minKeyNumber()){
+					left = true;
+				}
+				leftKey = lnode.keyNumber;
+			}
+			//检查右边是否有非hunger型节点
+			Node rnode = null;
+			if(index+1<parent.keyNumber+1){
+				rnode = parent.children[index+1];
+				if(rnode.keyNumber>minKeyNumber()){
+					right = true;
+				}
+				rightKey = rnode.keyNumber;
+			}
+			if(left||right){
+				//有非hunger型节点,操作拥有关键字最多的节点（尽量保持元素均衡分布）
+				if(leftKey>=rightKey){
+					//左边节点参与交换
+					//删除左边节点最大值并返回被删除元素
+					int temData = delData(lnode,lnode.keyNumber-1);
+					//替换父节点n-1位置的值，并返回被替换元素
+					temData = repData(parent,index-1,temData);
+					//将父节点被动、替换元素插入不平衡节点
+					addData(node,temData);
+					if(node.children!=null){
+						//如果子节点不为空，则需要把删除对应的子节点转移到新增数据子节点前面
+						Node temNode = delChildNode(lnode,lnode.keyNumber);
+						addChildNode(node,0,temNode);
+					}
+				}else{
+					//右边节点参与交换
+					//删除左边节点最大值并返回被删除元素
+					int temData = delData(rnode,0);
+					//替换父节点n位置的值，并返回被替换元素
+					temData = repData(parent,index,temData);
+					//将父节点被动、替换元素插入不平衡节点
+					addData(node,temData);
+					if(node.children!=null){
+						//如果子节点不为空，则需要把删除对应的子节点转移到新增数据子节点后面
+						Node temNode = delChildNode(rnode,0);
+						addChildNode(node,node.keyNumber,temNode);
+					}
+				}
+			}else{
+				//没有非hunger型节点，则合并节点
+				if(leftKey>=rightKey){
+					//左节点参与合并
+					//数据合并
+					System.arraycopy(parent.data, 0, lnode.data, lnode.keyNumber, 1);
+					System.arraycopy(node.data, 0, lnode.data, lnode.keyNumber+1, node.keyNumber);
+					node.keyNumber = node.keyNumber+lnode.keyNumber+1;
+					if(node.children!=null){
+						//如果子节点不为空，参与合并的两个节点的孩子也要合并
+						System.arraycopy(node.children, 0, rnode.children, rnode.keyNumber+1, node.keyNumber+1);
+					}
+					delChildNode(parent,index);
+					delData(parent,index-1);
+				}else{
+					//右节点参与合并
+					//数据合并
+					System.arraycopy(parent.data, 0, node.data, node.keyNumber, 1);
+					System.arraycopy(rnode.data, 0, node.data, node.keyNumber+1, rnode.keyNumber);
+					node.keyNumber = node.keyNumber+rnode.keyNumber+1;
+					if(node.children!=null){
+						//如果子节点不为空，参与合并的两个节点的孩子也要合并
+						System.arraycopy(rnode.children, 0, node.children, node.keyNumber+1, rnode.keyNumber+1);
+					}
+					//删除父节点data，和child
+					delChildNode(parent,index+1);
+					delData(parent,index);
+				}
+			}
+			
+		}
 	}
 	public static void main(String[] args) {
 		BUnderscodeTree2 but = new BUnderscodeTree2(3);
 		Node n = but.new Node(3);
-		Integer[] arr = new Integer[]{12,23,15,13,22,14,25,17,19,6,8,2,5,18};
+//		Integer[] arr = new Integer[]{12,23,15,13,22,14,25,17,19,6,8,2,5,18};
+		Integer[] arr = new Integer[]{12,23,15};
 		for(int i=0;i<arr.length;i++){
 			but.add(arr[i]);
 		}
 //		Node node = but.getNode(22);
 		System.out.println(but.getRoot());
 		System.out.println(JSON.toJSONString(but.getRoot(),true));
+//		but.delete(12);
+//		System.out.println(JSON.toJSONString(but.getRoot(),true));
+//		but.delete(15);
+//		System.out.println(JSON.toJSONString(but.getRoot(),true));
+//		but.delete(23);
+//		System.out.println(JSON.toJSONString(but.getRoot(),true));
 	}
 	
 	public static void printArray(String pre,Integer[] a){
