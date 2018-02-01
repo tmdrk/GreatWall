@@ -1,5 +1,7 @@
 package com.test.dataStructures.tree.BTree;
 
+import java.util.Random;
+
 import com.alibaba.fastjson.JSON;
 
 /**
@@ -122,6 +124,24 @@ public class BUnderscodeTree2 {
 			}
 		}
 		return node.keyNumber;
+	}
+	public void print(Node node){
+		printNode(node);
+		System.out.println(" size:"+size);
+	}
+	public void printNode(Node node){
+		for(int i=0;i<node.keyNumber+1;i++){
+			if(node.children!=null){
+				printNode(node.children[i]);
+				if(i!=node.keyNumber){
+					System.out.print(node.data[i]+",");
+				}
+			}else{
+				if(i!=node.keyNumber){
+					System.out.print(node.data[i]+",");
+				}
+			}
+		}
 	}
 	/**
 	 * 新增
@@ -276,7 +296,6 @@ public class BUnderscodeTree2 {
 	}
 	
 	public Node delete(int ele){
-		size--;
 		Node retNode = delete(sentinel,0,ele);
 		if(getRoot()!=null&&getRoot().keyNumber==0){
 			if(getRoot().children==null){
@@ -285,10 +304,16 @@ public class BUnderscodeTree2 {
 				sentinel.children[0]=getRoot().children[0];
 			}
 		}
+		if(retNode!=null){
+			size--;
+		}
 		return retNode;
 	}
 	public Node delete(Node parent,int index,int ele){
 		Node ret = null;
+		if(parent.children==null){
+			return null;
+		}
 		Node node = parent.children[index];
 		if(node==null){
 			return null;
@@ -312,13 +337,13 @@ public class BUnderscodeTree2 {
 			}else{
 				//被删除节点不为叶子结点时
 				//找到该节点右子树最小值，删除该值并返回
-				int delEle = delRightChildMin(node,tempIndex);
-				node.data[tempIndex]=delEle;
+				delRightChildMin(node,tempIndex+1);
 				//检查删除后节点状态
 				if(!getRoot().equals(node)){
 					checkDelNode(parent,index);
 				}
 			}
+			ret = node;
 		}else{
 			ret = delete(node,getIndex(node,ele),ele);
 			//检查删除后节点状态
@@ -332,17 +357,36 @@ public class BUnderscodeTree2 {
 	public int delRightChildMin(Node parent,int index){
 		Node node = parent.children[index];
 		if(node.children==null){
-			int ret = delData(node,0);
+			int ele = delData(node,0);
+			parent.data[index-1] = ele;
 			//检查删除后节点状态
 			if(!getRoot().equals(node)){
 				checkDelNode(parent,index);
 			}
-			return ret;
+			return ele;
 		}
-		int ele = delRightChildMin(node,0);
-		//检查删除后节点状态
+		int ele = delRightChildMin_(node);
+		parent.data[index-1] = ele;
+		//检查节点状态
 		if(!getRoot().equals(node)){
 			checkDelNode(parent,index);
+		}
+		return ele;
+	}
+	public int delRightChildMin_(Node parent){
+		Node node = parent.children[0];
+		if(node.children==null){
+			int ele = delData(node,0);
+			//检查删除后节点状态
+			if(!getRoot().equals(node)){
+				checkDelNode(parent,0);
+			}
+			return ele;
+		}
+		int ele = delRightChildMin_(node);
+		//检查节点状态
+		if(!getRoot().equals(node)){
+			checkDelNode(parent,0);
 		}
 		return ele;
 	}
@@ -367,9 +411,29 @@ public class BUnderscodeTree2 {
 		node.keyNumber--;
 		return ret;
 	}
+	/**
+	 * 删除index对应孩子节点并返回
+	 * @param node 当前节点
+	 * @param index children索引
+	 * @return
+	 */
 	public Node delChildNode(Node node,int index){
 		Node ret = node.children[index];
 		for(int i=index;i<node.keyNumber+1;i++){
+			node.children[i] = node.children[i+1];
+		}
+		return ret;
+	}
+	/**
+	 * 删除index对应孩子节点并返回（当节点关键字不能准确反映children长度时使用该方法）
+	 * @param node 当前节点
+	 * @param index children索引
+	 * @param length children长度 
+	 * @return
+	 */
+	public Node delChildNode(Node node,int index,int length){
+		Node ret = node.children[index];
+		for(int i=index;i<length;i++){
 			node.children[i] = node.children[i+1];
 		}
 		return ret;
@@ -427,7 +491,7 @@ public class BUnderscodeTree2 {
 					addData(node,temData);
 					if(node.children!=null){
 						//如果子节点不为空，则需要把删除对应的子节点转移到新增数据子节点前面
-						Node temNode = delChildNode(lnode,lnode.keyNumber);
+						Node temNode = delChildNode(lnode,lnode.keyNumber+1,lnode.keyNumber+2);
 						addChildNode(node,0,temNode);
 					}
 				}else{
@@ -449,25 +513,25 @@ public class BUnderscodeTree2 {
 				if(leftKey>=rightKey){
 					//左节点参与合并
 					//数据合并
-					System.arraycopy(parent.data, 0, lnode.data, lnode.keyNumber, 1);
+					System.arraycopy(parent.data, index-1, lnode.data, lnode.keyNumber, 1);
 					System.arraycopy(node.data, 0, lnode.data, lnode.keyNumber+1, node.keyNumber);
-					node.keyNumber = node.keyNumber+lnode.keyNumber+1;
 					if(node.children!=null){
 						//如果子节点不为空，参与合并的两个节点的孩子也要合并
-						System.arraycopy(node.children, 0, rnode.children, rnode.keyNumber+1, node.keyNumber+1);
+						System.arraycopy(node.children, 0, lnode.children, lnode.keyNumber+1, node.keyNumber+1);
 					}
+					lnode.keyNumber = node.keyNumber+lnode.keyNumber+1;
 					delChildNode(parent,index);
 					delData(parent,index-1);
 				}else{
 					//右节点参与合并
 					//数据合并
-					System.arraycopy(parent.data, 0, node.data, node.keyNumber, 1);
+					System.arraycopy(parent.data, index, node.data, node.keyNumber, 1);
 					System.arraycopy(rnode.data, 0, node.data, node.keyNumber+1, rnode.keyNumber);
-					node.keyNumber = node.keyNumber+rnode.keyNumber+1;
 					if(node.children!=null){
 						//如果子节点不为空，参与合并的两个节点的孩子也要合并
 						System.arraycopy(rnode.children, 0, node.children, node.keyNumber+1, rnode.keyNumber+1);
 					}
+					node.keyNumber = node.keyNumber+rnode.keyNumber+1;
 					//删除父节点data，和child
 					delChildNode(parent,index+1);
 					delData(parent,index);
@@ -477,22 +541,36 @@ public class BUnderscodeTree2 {
 		}
 	}
 	public static void main(String[] args) {
-		BUnderscodeTree2 but = new BUnderscodeTree2(3);
-		Node n = but.new Node(3);
-		Integer[] arr = new Integer[]{12,23,15,13,22,14,25,17,19,6,8,2,5,18,34,56,21,9,16,44,41,38,1,77,52,29,37,47};
+		BUnderscodeTree2 but = new BUnderscodeTree2(5);
+		Integer[] arr = new Integer[]{12,23,15,13,22,14,25,17,19,6,8,2,5,18,34,56,21,9,16,44,41,38,1,77,52,29,37,47,66,48};
 //		Integer[] arr = new Integer[]{12,23,15,13,22,14,25,17,19};
+//		Integer[] arr = new Integer[]{12,23,15,13,22,14,25,17,19,21,20};
+//		Integer[] arr = new Integer[]{12,23,15};
+		int length = 100;
+		int[] data = new int[length];
+		Random r = new Random();
+		for(int i=0;i<length;i++){
+			data[i]=r.nextInt(10000);
+		}
 		for(int i=0;i<arr.length;i++){
 			but.add(arr[i]);
 		}
 //		Node node = but.getNode(22);
 		System.out.println(but.getRoot());
 		System.out.println(JSON.toJSONString(but.getRoot(),true));
+		but.print(but.getRoot());
+		but.delete(37);
+		System.out.println(JSON.toJSONString(but.getRoot(),true));
+		but.print(but.getRoot());
+		but.delete(34);
+		System.out.println(JSON.toJSONString(but.getRoot(),true));
+		but.print(but.getRoot());
 		but.delete(15);
 		System.out.println(JSON.toJSONString(but.getRoot(),true));
-//		but.delete(15);
-//		System.out.println(JSON.toJSONString(but.getRoot(),true));
-//		but.delete(23);
-//		System.out.println(JSON.toJSONString(but.getRoot(),true));
+		but.print(but.getRoot());
+//		but.delete(243);
+//		System.out.println(JSON.toJSONString(but.getRoot(),false));
+//		but.print(but.getRoot());
 	}
 	
 	public static void printArray(String pre,Integer[] a){
