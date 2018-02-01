@@ -8,7 +8,7 @@ public class Test {
 		String name = "zhoujie";
 		int aa = 123;
 		u.setU(c);
-		System.out.println(u);
+		System.out.println(u+"|"+name+"|"+aa);
 		t.make(u,name,aa);
 //		User uu = u;
 //		uu = new User("zhouzhou",23);
@@ -16,20 +16,26 @@ public class Test {
 //		String name1 = name;
 //		name1 = "huihui";
 		System.out.println(u+"|"+name+"|"+aa);
+		t.make2(u.u);
+		System.out.println(u+"|"+name+"|"+aa);
 	}
-	public void make(User u,String name,int aa){
+	public void make(User uu,String name,int aa){
 //		u = new User("zhouzhou",23);
-//		User c = new User("erzi",3);
-//		u.setU(c);
-//		u.setName("时间");
+		User c = new User("erzi",3);
+		uu.u=c;
+		uu.age = 34;
+		uu.setName("时间");
 		name = "胡来";
 		aa = aa+1;
 	}
+	public void make2(User uuu){
+		uuu.age=65;
+	}
 }
 class User{
-	private String name;
-	private int age;
-	private User u;
+	String name;
+	int age;
+	User u;
 	public User(String name,int age){
 		this.name = name;
 		this.age = age;
