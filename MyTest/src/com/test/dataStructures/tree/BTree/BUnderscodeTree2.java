@@ -1,5 +1,8 @@
 package com.test.dataStructures.tree.BTree;
 
+import java.util.Arrays;
+import java.util.Random;
+
 import com.alibaba.fastjson.JSON;
 
 /**
@@ -73,6 +76,15 @@ public class BUnderscodeTree2 {
 		public void setChildren(Node[] children) {
 			this.children = children;
 		}
+		/* (non-Javadoc)
+		 * @see java.lang.Object#toString()
+		 */
+		@Override
+		public String toString() {
+			return "Node [keyNumber=" + keyNumber + ", data="
+					+ Arrays.toString(data) + "]";
+		}
+		
 	}
 	/**
 	 * 获取根节点
@@ -87,13 +99,13 @@ public class BUnderscodeTree2 {
 		return sentinel.children[0];
 	}
 	/**
-	 * 获取元素所在节点
+	 * 添加元素，获取目标节点
 	 * @param ele
 	 * @return
 	 * @author zhoujie
 	 * @date 2018年1月26日 下午4:30:54
 	 */
-	public Node getNode(Integer ele){
+	public Node getAddNode(Integer ele){
 		Node node = getRoot();
 		if(node==null){
 			return null;
@@ -102,11 +114,60 @@ public class BUnderscodeTree2 {
 			if(node.children==null){
 				return node;
 			}else{
-				int nodeIndex = getIndex(node,ele);
-				node = node.children[nodeIndex];
+				node = node.children[getIndex(node,ele)];
 			}
 		}
 	}
+	/**
+	 * 获取元素所在的节点
+	 * @param ele
+	 * @return
+	 */
+	public Node getNode(Integer ele){
+		Node node = getRoot();
+		while(true){
+			if(node==null){
+				return null;
+			}
+			for(int i=0;i<node.keyNumber;i++){
+				if(node.data[i]==ele){
+					return node;
+				}else if(node.data[i]>ele){
+					if(node.children==null){
+						return null;
+					}
+					node = node.children[i];
+					break;
+				}
+			}
+			node = node.children[node.keyNumber];
+		}
+	}
+//	/**
+//	 * 二分法获取节点
+//	 * @param ele
+//	 * @return
+//	 */
+//	public Node getNode(Integer ele){
+//		return getNode(getRoot(),0,getRoot().keyNumber,ele);
+//	}
+//	public Node getNode(Node node,int start,int end,Integer ele){
+//		if(end==start){
+//			if(node.data[start]==ele){
+//				return node;
+//			}else{
+//				return null;
+//			}
+//		}
+//		int index = (end-start)/2;
+//		if(node.data[index]>ele){
+//			return getNode(node,index+1,end,ele);
+//		}else if(node.data[index]<ele){
+//			return getNode(node,start,index-1,ele);
+//		}else{
+//			return node;
+//		}
+//	}
 	/**
 	 * 获取下级节点索引
 	 * @param node
@@ -164,9 +225,6 @@ public class BUnderscodeTree2 {
 	 * @date 2018年1月23日 下午4:11:24
 	 */
 	public boolean add(Node parent,int index,int ele){
-		if(ele==20){
-			System.out.println(1);
-		}
 		boolean result = false;
 		if(parent.children==null){
 			parent.children = new Node[m+1];
@@ -544,27 +602,32 @@ public class BUnderscodeTree2 {
 		}
 	}
 	public static void main(String[] args) {
-		BUnderscodeTree2 but = new BUnderscodeTree2(5);
+		BUnderscodeTree2 but = new BUnderscodeTree2(9);
 		Integer[] arr = new Integer[]{12,23,15,13,22,14,25,17,19,6,8,2,5,18,34,56,21,9,16,44,41,38,1,77,52,29,37,47,66,48};
 //		Integer[] arr = new Integer[]{12,23,15,13,22,14,25,17,19};
 //		Integer[] arr = new Integer[]{12,23,15,13,22,14,25,17,19,21,20};
 //		Integer[] arr = new Integer[]{12,23,15};
-		int length = 100;
-		int[] data = new int[length];
-		for(int i=0;i<length;i++){
-			data[i]=i;
+		
+//		int length = 1000000;
+//		int[] data = new int[length];
+//		Random r = new Random();
+//		for(int i=0;i<length;i++){
+//			data[i]=r.nextInt(length*10);
+//		}
+		Long startTime = System.currentTimeMillis();
+		for(int i=0;i<arr.length;i++){
+			but.add(arr[i]);
 		}
-		for(int i=0;i<data.length;i++){
-			but.add(data[i]);
-		}
-		for(int i=0;i<data.length;i++){
-			but.delete(data[i]);
-			System.out.println(JSON.toJSONString(but.getRoot(),true));
-			but.print(but.getRoot());
-		}
-		String a =null;
-		System.out.println("a="+a);
-//		Node node = but.getNode(22);
+		Long endTime = System.currentTimeMillis();
+		System.out.println("插入"+arr.length+"条数据耗时"+(endTime-startTime)+"毫秒");
+//		for(int i=0;i<data.length;i++){
+//			but.delete(data[i]);
+//			System.out.println(JSON.toJSONString(but.getRoot(),true));
+//			but.print(but.getRoot());
+//		}
+		System.out.println(JSON.toJSONString(but.getRoot(),true));
+		Node node = but.getNode(53);
+		System.out.println(node);
 //		System.out.println(but.getRoot());
 //		System.out.println(JSON.toJSONString(but.getRoot(),true));
 //		but.print(but.getRoot());
