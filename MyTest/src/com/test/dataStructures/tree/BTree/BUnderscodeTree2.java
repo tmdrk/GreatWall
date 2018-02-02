@@ -1,7 +1,5 @@
 package com.test.dataStructures.tree.BTree;
 
-import java.util.Random;
-
 import com.alibaba.fastjson.JSON;
 
 /**
@@ -126,7 +124,12 @@ public class BUnderscodeTree2 {
 		return node.keyNumber;
 	}
 	public void print(Node node){
-		printNode(node);
+		if(node!=null){
+			System.out.print("tree:");
+			printNode(node);
+		}else{
+			System.out.println(" tree:null");
+		}
 		System.out.println(" size:"+size);
 	}
 	public void printNode(Node node){
@@ -548,28 +551,31 @@ public class BUnderscodeTree2 {
 //		Integer[] arr = new Integer[]{12,23,15};
 		int length = 100;
 		int[] data = new int[length];
-		Random r = new Random();
 		for(int i=0;i<length;i++){
-			data[i]=r.nextInt(10000);
+			data[i]=i;
 		}
-		for(int i=0;i<arr.length;i++){
-			but.add(arr[i]);
+		for(int i=0;i<data.length;i++){
+			but.add(data[i]);
 		}
+		for(int i=0;i<data.length;i++){
+			but.delete(data[i]);
+			System.out.println(JSON.toJSONString(but.getRoot(),true));
+			but.print(but.getRoot());
+		}
+		String a =null;
+		System.out.println("a="+a);
 //		Node node = but.getNode(22);
-		System.out.println(but.getRoot());
-		System.out.println(JSON.toJSONString(but.getRoot(),true));
-		but.print(but.getRoot());
-		but.delete(37);
-		System.out.println(JSON.toJSONString(but.getRoot(),true));
-		but.print(but.getRoot());
-		but.delete(34);
-		System.out.println(JSON.toJSONString(but.getRoot(),true));
-		but.print(but.getRoot());
-		but.delete(15);
-		System.out.println(JSON.toJSONString(but.getRoot(),true));
-		but.print(but.getRoot());
-//		but.delete(243);
-//		System.out.println(JSON.toJSONString(but.getRoot(),false));
+//		System.out.println(but.getRoot());
+//		System.out.println(JSON.toJSONString(but.getRoot(),true));
+//		but.print(but.getRoot());
+//		but.delete(37);
+//		System.out.println(JSON.toJSONString(but.getRoot(),true));
+//		but.print(but.getRoot());
+//		but.delete(34);
+//		System.out.println(JSON.toJSONString(but.getRoot(),true));
+//		but.print(but.getRoot());
+//		but.delete(15);
+//		System.out.println(JSON.toJSONString(but.getRoot(),true));
 //		but.print(but.getRoot());
 	}
 	
