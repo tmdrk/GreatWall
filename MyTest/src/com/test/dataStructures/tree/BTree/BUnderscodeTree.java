@@ -88,8 +88,7 @@ public class BUnderscodeTree {
 		 */
 		@Override
 		public String toString() {
-			return "Node [keyNumber=" + keyNumber + ", data="
-					+ Arrays.toString(data) + "]";
+			return "Node [keyNumber=" + keyNumber + ", data=" + Arrays.toString(data) + ", isLeft="+ (children==null?"true":"false") + "]";
 		}
 		
 	}
@@ -268,10 +267,11 @@ public class BUnderscodeTree {
 	public boolean add(Node parent,int index,int ele){
 		boolean result = false;
 		if(parent.children==null){
-			parent.children = new Node[m+1];
+			parent.children = new Node[1];
 			parent.children[0] = new Node(ele);
 			result = true;
 		}else if(parent.children[index].children==null){
+			//判断为叶子节点，将元素添加到该节点
 			Node node = parent.children[index];
 			/** 添加元素 **/
 			addData(node,ele);

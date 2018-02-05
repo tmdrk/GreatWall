@@ -44,7 +44,21 @@ public class MapTest {
 		
 		Integer a = 128;
 		Integer b = 128;
-		System.out.println(a.equals(b));
+		System.out.println(a==b);
+		Integer a1 = 127;
+		Integer b1 = 127;
+		System.out.println(a1==b1);
+		
+		int aa = 128;
+		int bb = 128;
+		System.out.println(aa==bb);
+		int aa1 = 127;
+		int bb1 = 127;
+		System.out.println(aa1==bb1);
+		
+		Long m = 127L;
+		Long n = 127L;
+		System.out.println(m==n);
 	}
 	
 	public static void main() {
