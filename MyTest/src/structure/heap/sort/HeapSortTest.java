@@ -13,25 +13,25 @@ import com.test.sort.ShellSort;
 
 public class HeapSortTest {
 	public static void main(String[] args) {
-		int length = 10000000;
+		int length = 100000000;
 		int[] tree = new int[length];
 		Random r = new Random();
 		for(int i=0;i<length;i++){
 			tree[i]=r.nextInt(length);
 		}
-		int[] tree1 = tree.clone();
-		int[] tree2 = tree.clone();
-		int[] tree3 = tree.clone();
-		int[] tree4 = tree.clone();
-		int[] tree5 = tree.clone();
-		int[] tree6 = tree.clone();
-		int[] tree7 = tree.clone();
-		int[] tree8 = tree.clone();
+//		int[] tree1 = tree.clone();
+//		int[] tree2 = tree.clone();
+//		int[] tree3 = tree.clone();
+//		int[] tree4 = tree.clone();
+//		int[] tree5 = tree.clone();
+//		int[] tree6 = tree.clone();
+//		int[] tree7 = tree.clone();
+//		int[] tree8 = tree.clone();
 		
-		long start = nowTime(length);
-		sortHeap(tree);
-		long end = nowTime(length);
-		printTime("堆排序",start,end,length);
+//		long start = nowTime(length);
+//		sortHeap(tree);
+//		long end = nowTime(length);
+//		printTime("堆排序",start,end,length);
 		
 //		long start1 = nowTime(length);
 //		InsertSort.sort(tree1);
@@ -48,31 +48,30 @@ public class HeapSortTest {
 //		long end3 = nowTime(length);
 //		printTime("选择排序",start3,end3,length);
 		
-		long start4 = nowTime(length);
-		MergeSort.sort(tree4);
-		long end4 = nowTime(length);
-		printTime("归并排序",start4,end4,length);
-		
-		long start5 = nowTime(length);
-		MergeParallelSort.sort(tree5);
-		long end5 = nowTime(length);
-		printTime("并行归并排序",start5,end5,length);
-		
+//		long start4 = nowTime(length);
+//		MergeSort.sort(tree4);
+//		long end4 = nowTime(length);
+//		printTime("归并排序",start4,end4,length);
+//		
+//		long start5 = nowTime(length);
+//		MergeParallelSort.sort(tree5);
+//		long end5 = nowTime(length);
+//		printTime("并行归并排序",start5,end5,length);
+//		
 		long start6 = nowTime(length);
-		QuickSort.sort(tree6);
+		QuickSort.sort(tree);
 		long end6 = nowTime(length);
 		printTime("快速排序",start6,end6,length);
 		
-		long start7 = nowTime(length);
-		RadixSort.sort(tree7);
-		long end7 = nowTime(length);
-		printTime("基数排序",start7,end7,length);
+//		long start7 = nowTime(length);
+//		RadixSort.sort(tree7);
+//		long end7 = nowTime(length);
+//		printTime("基数排序",start7,end7,length);
 		
-		long start8 = nowTime(length);
-		ShellSort.sort(tree8);
-		long end8 = nowTime(length);
-		printTime("希尔排序",start8,end8,length);
-//		BuildHeap.printArray("排序后",tree7);
+//		long start8 = nowTime(length);
+//		ShellSort.sort(tree8);
+//		long end8 = nowTime(length);
+//		printTime("希尔排序",start8,end8,length);
 		
 	}
 	public static void sortHeap(int[] tree){

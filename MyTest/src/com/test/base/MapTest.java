@@ -41,6 +41,10 @@ public class MapTest {
 		System.out.println("sum2="+sum2);
 		System.out.println("sum3="+sum3);
 		System.out.println("sum4="+sum4);
+		
+		Integer a = 128;
+		Integer b = 128;
+		System.out.println(a.equals(b));
 	}
 	
 	public static void main() {

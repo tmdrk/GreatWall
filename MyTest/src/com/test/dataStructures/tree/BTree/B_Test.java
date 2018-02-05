@@ -1,0 +1,44 @@
+package com.test.dataStructures.tree.BTree;
+
+import java.util.Random;
+
+public class B_Test {
+	public static final int m = 10000;
+	public static void main(String[] args) {
+		int length = 100000;
+		int[] data = new int[length];
+		Random r = new Random();
+		for(int i=0;i<length;i++){
+			data[i]=r.nextInt(length*10);
+		}
+		int[] data1 = data.clone();
+		int[] data2 = data.clone();
+		BUnderscodeTree but1 = new BUnderscodeTree(m);
+		BUnderscodeTree2 but2 = new BUnderscodeTree2(m);
+		Long startTime11 = System.currentTimeMillis();
+		for(int i=0;i<data1.length;i++){
+			but1.add(data1[i]);
+		}
+		Long endTime11 = System.currentTimeMillis();
+		System.out.println("插入"+data1.length+"条数据耗时"+(endTime11-startTime11)+"毫秒");
+		Long startTime12 = System.currentTimeMillis();
+		for(int i=0;i<data1.length;i++){
+			but1.getNode(data1[i]);
+		}
+		Long endTime12 = System.currentTimeMillis();
+		System.out.println("查询"+data1.length+"条数据耗时"+(endTime12-startTime12)+"毫秒");
+		
+		Long startTime21 = System.currentTimeMillis();
+		for(int i=0;i<data2.length;i++){
+			but2.add(data2[i]);
+		}
+		Long endTime21 = System.currentTimeMillis();
+		System.out.println("插入"+data2.length+"条数据耗时"+(endTime21-startTime21)+"毫秒");
+		Long startTime22 = System.currentTimeMillis();
+		for(int i=0;i<data2.length;i++){
+			but2.getNode(data2[i]);
+		}
+		Long endTime22 = System.currentTimeMillis();
+		System.out.println("查询"+data2.length+"条数据耗时"+(endTime22-startTime22)+"毫秒");
+	}
+}

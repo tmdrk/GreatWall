@@ -125,20 +125,24 @@ public class BUnderscodeTree2 {
 	 */
 	public Node getNode(Integer ele){
 		Node node = getRoot();
+		if(node==null){
+			return null;
+		}
 		while(true){
-			if(node==null){
-				return null;
-			}
 			for(int i=0;i<node.keyNumber;i++){
-				if(node.data[i]==ele){
+				if(node.data[i].equals(ele)){
 					return node;
 				}else if(node.data[i]>ele){
 					if(node.children==null){
 						return null;
 					}
 					node = node.children[i];
-					break;
+					i=-1;
+					continue;
 				}
+			}
+			if(node.children==null){
+				return null;
 			}
 			node = node.children[node.keyNumber];
 		}
@@ -382,7 +386,7 @@ public class BUnderscodeTree2 {
 		boolean isCurrent=false;
 		int tempIndex=0;
 		for(int i=0;i<node.keyNumber;i++){
-			if(node.data[i]==ele){
+			if(node.data[i].equals(ele)){
 				isCurrent = true;
 				tempIndex = i;
 			}
@@ -602,32 +606,41 @@ public class BUnderscodeTree2 {
 		}
 	}
 	public static void main(String[] args) {
-		BUnderscodeTree2 but = new BUnderscodeTree2(9);
+		BUnderscodeTree2 but = new BUnderscodeTree2(100);
 		Integer[] arr = new Integer[]{12,23,15,13,22,14,25,17,19,6,8,2,5,18,34,56,21,9,16,44,41,38,1,77,52,29,37,47,66,48};
 //		Integer[] arr = new Integer[]{12,23,15,13,22,14,25,17,19};
 //		Integer[] arr = new Integer[]{12,23,15,13,22,14,25,17,19,21,20};
 //		Integer[] arr = new Integer[]{12,23,15};
 		
-//		int length = 1000000;
-//		int[] data = new int[length];
-//		Random r = new Random();
-//		for(int i=0;i<length;i++){
-//			data[i]=r.nextInt(length*10);
-//		}
+		int length = 1000000;
+		int[] data = new int[length];
+		Random r = new Random();
+		for(int i=0;i<length;i++){
+			data[i]=r.nextInt(length*10);
+		}
 		Long startTime = System.currentTimeMillis();
-		for(int i=0;i<arr.length;i++){
-			but.add(arr[i]);
+		for(int i=0;i<data.length;i++){
+			but.add(data[i]);
 		}
 		Long endTime = System.currentTimeMillis();
-		System.out.println("插入"+arr.length+"条数据耗时"+(endTime-startTime)+"毫秒");
+		System.out.println("插入"+data.length+"条数据耗时"+(endTime-startTime)+"毫秒");
+		int count=0;
+		Long startTime1 = System.currentTimeMillis();
+		for(int i=0;i<data.length;i++){
+			but.getNode(data[i]);
+			count++;
+		}
+		Long endTime1 = System.currentTimeMillis();
+		System.out.println("查询"+data.length+"条数据耗时"+(endTime1-startTime1)+"毫秒");
+		System.out.println("count="+count);
 //		for(int i=0;i<data.length;i++){
 //			but.delete(data[i]);
 //			System.out.println(JSON.toJSONString(but.getRoot(),true));
 //			but.print(but.getRoot());
 //		}
-		System.out.println(JSON.toJSONString(but.getRoot(),true));
-		Node node = but.getNode(53);
-		System.out.println(node);
+//		System.out.println(JSON.toJSONString(but.getRoot(),true));
+//		Node node = but.getNode(53);
+//		System.out.println(node);
 //		System.out.println(but.getRoot());
 //		System.out.println(JSON.toJSONString(but.getRoot(),true));
 //		but.print(but.getRoot());
