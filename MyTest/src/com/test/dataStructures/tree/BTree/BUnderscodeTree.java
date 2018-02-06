@@ -136,8 +136,9 @@ public class BUnderscodeTree {
 		}
 		int start = 0;
 		int end = node.keyNumber-1;
+		int index ;
 		while(true){
-			int index = (end+start)/2;
+			index = (end+start)/2;
 			if(node.data[index]>ele){
 				if(end==start||start==index){
 					if(node.children==null){
@@ -200,8 +201,9 @@ public class BUnderscodeTree {
 		}
 		int start = 0;
 		int end = node.keyNumber-1;
+		int index;
 		while(true){
-			int index = (end+start)/2;
+			index = (end+start)/2;
 			if(node.data[index]>ele){
 				if(end==start||start==index){
 					return index;
@@ -296,23 +298,19 @@ public class BUnderscodeTree {
 	 * @date 2018年1月25日 上午11:57:25
 	 */
 	public void addData(Node node,int ele){
-		boolean flag = true;
-		int temp;
-		for(int i=0;i<node.keyNumber;i++){
-			if(flag){
-				if(node.data[i]>ele){
-					temp = node.data[i];
-					node.data[i] = ele;
-					ele = temp;
-					flag = false;
-				}
+		boolean notReplace = true; 
+		for(int i=node.keyNumber-1;i>=0;i--){
+			if(node.data[i]>ele){
+				node.data[i+1] = node.data[i];
 			}else{
-				temp = node.data[i];
-				node.data[i] = ele;
-				ele = temp;
+				node.data[i+1] = ele;
+				notReplace = false;
+				break;
 			}
 		}
-		node.data[node.keyNumber] = ele;
+		if(notReplace){
+			node.data[0] = ele;
+		}
 		node.keyNumber++;
 	}
 	
@@ -497,19 +495,14 @@ public class BUnderscodeTree {
 	}
 	
 	public void addChildNode(Node node,int index,Node child){
-		Node temp;
-		for(int i=index;i<node.keyNumber+1;i++){
-			temp = node.children[i];
-			node.children[i] = child;
-			child = temp;
-		}
+		System.arraycopy(node.children, index, node.children,index+1,node.keyNumber-(index));
+		node.children[index] = child;
 	}
 	
 	public int delData(Node node,int index){
 		int ret = node.data[index];
-		for(int i=index;i<node.keyNumber;i++){
-			node.data[i] = node.data[i+1];
-		}
+		System.arraycopy(node.data, index+1, node.data,index,node.keyNumber-(index+1));
+		node.data[node.keyNumber-1] = null;
 		node.keyNumber--;
 		return ret;
 	}

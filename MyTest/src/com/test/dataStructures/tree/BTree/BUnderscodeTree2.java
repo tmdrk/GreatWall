@@ -146,31 +146,6 @@ public class BUnderscodeTree2 {
 			node = node.children[node.keyNumber];
 		}
 	}
-//	/**
-//	 * 二分法获取节点
-//	 * @param ele
-//	 * @return
-//	 */
-//	public Node getNode(Integer ele){
-//		return getNode(getRoot(),0,getRoot().keyNumber,ele);
-//	}
-//	public Node getNode(Node node,int start,int end,Integer ele){
-//		if(end==start){
-//			if(node.data[start]==ele){
-//				return node;
-//			}else{
-//				return null;
-//			}
-//		}
-//		int index = (end-start)/2;
-//		if(node.data[index]>ele){
-//			return getNode(node,index+1,end,ele);
-//		}else if(node.data[index]<ele){
-//			return getNode(node,start,index-1,ele);
-//		}else{
-//			return node;
-//		}
-//	}
 	/**
 	 * 获取下级节点索引
 	 * @param node

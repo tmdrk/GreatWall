@@ -50,6 +50,8 @@ class Conditions {
 				con.signal();
 			}
 		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}finally{
 			lock.unlock();
 		}
 	}
@@ -65,6 +67,8 @@ class Conditions {
 				con.signal();
 			}
 		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}finally{
 			lock.unlock();
 		}
 	}

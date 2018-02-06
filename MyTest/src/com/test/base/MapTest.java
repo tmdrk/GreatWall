@@ -59,6 +59,26 @@ public class MapTest {
 		Long m = 127L;
 		Long n = 127L;
 		System.out.println(m==n);
+		
+		int ss1 = 100001;
+		int ss2 = 100000;
+		Long startTime1 = System.currentTimeMillis();
+		for(int i=0;i<ss1-1;i++){
+			for(int j=0;j<=ss1-1;j++){
+				
+			}
+		}
+		Long endTime1 = System.currentTimeMillis();
+		System.out.println("< --"+(endTime1-startTime1));
+		
+		Long startTime2 = System.currentTimeMillis();
+		for(int i=0;i<ss2;i++){
+			for(int j=0;j<ss2;j++){
+				
+			}
+		}
+		Long endTime2 = System.currentTimeMillis();
+		System.out.println("<= --"+(endTime2-startTime2));
 	}
 	
 	public static void main() {
