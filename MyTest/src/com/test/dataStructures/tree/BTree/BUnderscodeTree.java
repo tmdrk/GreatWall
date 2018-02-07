@@ -204,26 +204,27 @@ public class BUnderscodeTree {
 		int index;
 		while(true){
 			index = (end+start)/2;
-			if(node.data[index]>ele){
-				if(end==start||start==index){
-					return index;
-				}else{
-					end = index-1;
-					continue;
-				}
-			}else{
+			if(node.data[index]-ele==0){
+				return index+1;
+			}else if(node.data[index]<ele){
 				if(end==start){
 					return index+1;
 				}else{
 					start = index+1;
 					continue;
 				}
-				
+			}else{
+				if(end==start||start==index){
+					return index;
+				}else{
+					end = index-1;
+					continue;
+				}
 			}
 		}
 	}
 	/**
-	 * 打印树结构
+	 * 后序遍历
 	 * @param node
 	 */
 	public void print(Node node){

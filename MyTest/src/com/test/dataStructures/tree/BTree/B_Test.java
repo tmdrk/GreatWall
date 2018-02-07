@@ -5,7 +5,7 @@ import java.util.Random;
 import com.alibaba.fastjson.JSON;
 
 public class B_Test {
-	public static final int m = 100;
+	public static final int m = 1000;
 	public static void main(String[] args) {
 		int length = 100000;
 		int[] data = new int[length];

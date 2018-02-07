@@ -1,7 +1,11 @@
 package com.test.dataStructures.tree.BTree;
 
+import java.util.AbstractMap.SimpleEntry;
 import java.util.Arrays;
+import java.util.Random;
+import java.util.Map.Entry;
 
+import com.alibaba.fastjson.JSON;
 import com.test.common.util.Assert;
 
 /**
@@ -15,6 +19,7 @@ import com.test.common.util.Assert;
  * @author zhoujie
  *
  */
+@SuppressWarnings({"rawtypes","unchecked"})
 public class BAdditionTree {
 	public BAdditionTree(){
 		this(3);
@@ -37,51 +42,60 @@ public class BAdditionTree {
 	
 	public class Node {
 		/** 关键字个数 **/
-		int keyNumber;
-		/** 关键字数组 **/
-		Integer[] key;
+		int dataNumber;
 		/** 数据数组 **/
-		Object[] data;
+		Entry<Integer,Object>[] data;
 		/** 子节点 **/
 		Node[] children;
 		/** 下一兄弟节点 **/
-		Node[] nextNode;
+		Node nextNode;
 		
 		public Node(){
+			
 		}
-		public Node(int v){
-			Integer[] d = new Integer[m+1];
-			d[0] = v;
-			this.keyNumber = 1;
-			this.key = d;
+		public Node(int key){
+			Entry<Integer,Object>[] d = new SimpleEntry[m+1];
+			d[0] = new SimpleEntry<Integer,Object>(key, null);
+			this.dataNumber = 1;
+			this.data = d;
 		}
-		public Node(Integer[] key,int keyNumber){
-			this(key,keyNumber,null);
+		public Node(int key,Object val){
+			Entry<Integer,Object>[] d = new SimpleEntry[m+1];
+			d[0] = new SimpleEntry<Integer,Object>(key, val);
+			this.dataNumber = 1;
+			this.data = d;
 		}
-		public Node(Integer[] key,int keyNumber,Node[] children){
-			this(key,keyNumber,null,children);
+		public Node(Entry entry){
+			Entry<Integer,Object>[] d = new SimpleEntry[m+1];
+			d[0] = entry;
+			this.dataNumber = 1;
+			this.data = d;
 		}
-		public Node(Integer[] key,int keyNumber,Object[] data){
-			this(key,keyNumber,data,null);
+		public Node(Entry<Integer,Object>[] data,int dataNumber){
+			this(data,dataNumber,null);
 		}
-		public Node(Integer[] key,int keyNumber,Object[] data,Node[] children){
-			this.keyNumber = keyNumber;
-			this.key = key;
+		public Node(Entry<Integer,Object>[] data,int dataNumber,Node[] children){
+			this(data,dataNumber,children,null);
+		}
+		public Node(Entry<Integer,Object>[] data,int dataNumber,Node[] children,Node nextNode){
+			this.dataNumber = dataNumber;
 			this.data = data;
 			this.children = children;
+			this.nextNode = nextNode;
 		}
 		
-		public int getKeyNumber() {
-			return keyNumber;
+		public int getdataNumber() {
+			return dataNumber;
 		}
-		public void setKeyNumber(int keyNumber) {
-			this.keyNumber = keyNumber;
+		public void setdataNumber(int dataNumber) {
+			this.dataNumber = dataNumber;
 		}
-		public Integer[] getkey() {
-			return key;
+		@SuppressWarnings("rawtypes")
+		public Entry[] getdata() {
+			return data;
 		}
-		public void setkey(Integer[] key) {
-			this.key = key;
+		public void setdata(Entry[] data) {
+			this.data = data;
 		}
 		public Node[] getChildren() {
 			return children;
@@ -94,7 +108,7 @@ public class BAdditionTree {
 		 */
 		@Override
 		public String toString() {
-			return "Node [keyNumber=" + keyNumber + ", key=" + Arrays.toString(key) + ", isLeft="+ (children==null?"true":"false") + "]";
+			return "Node [dataNumber=" + dataNumber + ", data=" + Arrays.toString(data) + ", isLeft="+ (children==null?"true":"false") + "]";
 		}
 		
 	}
@@ -112,27 +126,36 @@ public class BAdditionTree {
 		return sentinel.children[0];
 	}
 	
-	public boolean add(int ele){
+	public boolean add(int ele,Object obj){
 		size++;
-		return add(sentinel,0,ele);
+		Entry<Integer,Object> entry = new SimpleEntry<Integer,Object>(ele, obj);
+		return add(sentinel,0,entry);
 	}
-	public boolean add(Node parent,int index,int ele){
+	public boolean add(Node parent,int index,Entry<Integer,Object> entry){
 		boolean result = false;
 		if(parent.children==null){
 			parent.children = new Node[1];
-			parent.children[0] = new Node(ele);
+			parent.children[0] = new Node(entry);
+			head.nextNode = parent.children[0];
 			result = true;
 		}else if(parent.children[index].children==null){
 			//判断为叶子节点，将元素添加到该节点
 			Node node = parent.children[index];
 			/** 添加元素 **/
-			addkey(node,ele);
+			addData(node,entry);
 			/** 检查元素是否需要分裂 **/
 			checkNode(parent,index);
 			result = true;
 		}else{
+			Node node = parent.children[index];
+			//
+			if(node.data[0].getKey()>entry.getKey()){
+				System.out.println("测试小于情况");
+				node.data[0] = entry;
+			}
 			//递归调用
-			result = add(parent.children[index],getIndex(parent.children[index],ele),ele);
+			int inde = getIndex(parent.children[index],entry);
+			result = add(node,inde,entry);
 			//检查节点是否符合B树特征
 			checkNode(parent,index);
 		}
@@ -147,21 +170,41 @@ public class BAdditionTree {
 	 * @author zhoujie
 	 * @date 2018年1月25日 上午11:57:25
 	 */
-	public void addkey(Node node,int ele){
+	public void addData(Node node,Entry<Integer,Object> entry){
 		boolean notReplace = true; 
-		for(int i=node.keyNumber-1;i>=0;i--){
-			if(node.key[i]>ele){
-				node.key[i+1] = node.key[i];
+		for(int i=node.dataNumber-1;i>=0;i--){
+			if(node.data[i].getKey()>entry.getKey()){
+				node.data[i+1] = node.data[i];
 			}else{
-				node.key[i+1] = ele;
+				node.data[i+1] = entry;
 				notReplace = false;
 				break;
 			}
 		}
 		if(notReplace){
-			node.key[0] = ele;
+			node.data[0] = entry;
 		}
-		node.keyNumber++;
+		node.dataNumber++;
+	}
+	
+	/**
+	 * 新建或更新节点
+	 * @param node
+	 * @param data
+	 * @param dataNumber
+	 * @param children
+	 * @param nextNode
+	 * @return
+	 */
+	public Node newOrUpdate(Node node,Entry<Integer,Object>[] data,int dataNumber,Node[] children,Node nextNode){
+		if(node==null){
+			return new Node(data,dataNumber,children,nextNode);
+		}
+		node.children = children;
+		node.dataNumber = dataNumber;
+		node.data = data;
+		node.nextNode = nextNode;
+		return node;
 	}
 	
 	/**
@@ -171,70 +214,75 @@ public class BAdditionTree {
 	 */
 	public void checkNode(Node parent,int index){
 		Node node = parent.children[index];
-		if(node.keyNumber==m+1){//关键字 大于b树阶数减1，需要分裂
+		if(node.dataNumber==m+1){//关键字 大于b树阶数减1，需要分裂
 			if(node.equals(getRoot())){//当前操作元素是根节点时分裂
-				//将根节点key元素从中间一分为三
-				Integer[] tempkeys = node.key;
-				int middle = tempkeys.length/2;
-				Integer[] rootkey = new Integer[m];
-				Integer[] leftkey = new Integer[m];
-				Integer[] rightkey = new Integer[m];
-				System.arraycopy(tempkeys, middle, rootkey, 0,1);
-				System.arraycopy(tempkeys, 0, leftkey, 0, middle);
-				System.arraycopy(tempkeys, middle+1, rightkey, 0, m-(middle+1));
-				node.keyNumber=1;
-				node.key = rootkey;
+				//将根节点data元素从中间一分为三
+				Entry<Integer,Object>[] tempdatas = node.data;
+				int middle = tempdatas.length/2;
+				Entry<Integer,Object>[] rootdata = new SimpleEntry[m+1];
+				Entry<Integer,Object>[] leftdata = new SimpleEntry[m+1];
+				Entry<Integer,Object>[] rightdata = new SimpleEntry[m+1];
+				//将根数据拆分为两份
+				System.arraycopy(tempdatas, 0, leftdata, 0, middle);
+				System.arraycopy(tempdatas, middle, rightdata, 0, m+1-middle);
+				//设置新的根数据
+				rootdata[0] = new SimpleEntry(tempdatas[0].getKey(),null);
+				rootdata[1] = new SimpleEntry(tempdatas[middle].getKey(),null);
 				if(node.children==null){
 					//根节点孩子为空时，只需要将数据拆分为两部分，并赋给分裂后的左右节点
-					node.children = new Node[m+1];
-					Node leftNode = new Node(leftkey,middle);
-					Node rightNode = new Node(rightkey,m-(middle+1));
+					Node rightNode = newOrUpdate(null,rightdata,m+1-middle,null,node.nextNode);
+					node = newOrUpdate(node,leftdata,middle,null,rightNode);
 					//调整父节点
-					node.children[0] = leftNode;
-					node.children[1] = rightNode;
+					Node[] rootChildren = new Node[m+1];
+					rootChildren[0] = node;
+					rootChildren[1] = rightNode;
+					Node rootNode = newOrUpdate(null,rootdata,2,rootChildren,null);
+					parent.children[index] = rootNode;
 				}else{
 					//根节点孩子不为空时，将孩子数组拆分成两部分，并赋给分裂后的左右节点
 					Node[] tempNodes = node.children;
-					int middleNode = tempNodes.length%2==0?tempNodes.length/2:tempNodes.length/2+1;
+					int middleNode = middle;
 					Node[] leftNodes = new Node[m+1];
 					Node[] rightNodes = new Node[m+1];
 					System.arraycopy(tempNodes, 0, leftNodes, 0, middleNode);
 					System.arraycopy(tempNodes, middleNode, rightNodes, 0, m+1-middleNode);
-					Node leftNode = new Node(leftkey,middle,leftNodes);
-					Node rightNode = new Node(rightkey,m-(middle+1),rightNodes);
+					
+					Node rightNode = newOrUpdate(null,rightdata,m+1-middle,rightNodes,node.nextNode);
+					node = newOrUpdate(node,leftdata,middle,leftNodes,rightNode);
 					//调整父节点
-					Node[] pNode = new Node[m+1];
-					node.children = pNode;
-					node.children[0] = leftNode;
-					node.children[1] = rightNode;
+					Node[] rootChildren = new Node[m+1];
+					rootChildren[0] = node;
+					rootChildren[1] = rightNode;
+					Node rootNode = newOrUpdate(null,rootdata,2,rootChildren,null);
+					parent.children[index] = rootNode;
 				}
 			}else{//当不平衡节点不为根节点时
-				//将不平衡节点key元素从中间一分为三
-				Integer[] tempkeys = node.key;
-				int middle = tempkeys.length/2;
-				Integer[] leftkey = new Integer[m];
-				Integer[] rightkey = new Integer[m];
-				System.arraycopy(tempkeys, 0, leftkey, 0, middle);
-				System.arraycopy(tempkeys, middle+1, rightkey, 0, m-(middle+1));
-				addkey(parent,tempkeys[middle]);
+				//将不平衡节点data元素从中间一分为三
+				Entry<Integer,Object>[] tempdatas = node.data;
+				int middle = tempdatas.length/2;
+				Entry<Integer,Object>[] leftdata = new SimpleEntry[m+1];
+				Entry<Integer,Object>[] rightdata = new SimpleEntry[m+1];
+				System.arraycopy(tempdatas, 0, leftdata, 0, middle);
+				System.arraycopy(tempdatas, middle, rightdata, 0, m+1-middle);
+				addData(parent,tempdatas[middle]);
 				if(node.children==null){
 					//不平衡节点孩子为空时，只需要将数据拆分为两部分，并赋给分裂后的左右节点
-					Node leftNode = new Node(leftkey,middle);
-					Node rightNode = new Node(rightkey,m-(middle+1));
+					Node rightNode = newOrUpdate(null,rightdata,m+1-middle,null,node.nextNode);
+					node = newOrUpdate(node,leftdata,middle,null,rightNode);
 					//调整父节点
-					adjustParent(parent,index,leftNode,rightNode);
+					adjustParent(parent,index,node,rightNode);
 				}else{
 					//不平衡节点孩子不为空时，将孩子数组拆分成两部分，并赋给分裂后的左右节点
 					Node[] tempNodes = node.children;
-					int middleNode = tempNodes.length%2==0?tempNodes.length/2:tempNodes.length/2+1;
+					int middleNode = middle;
 					Node[] leftNodes = new Node[m+1];
 					Node[] rightNodes = new Node[m+1];
 					System.arraycopy(tempNodes, 0, leftNodes, 0, middleNode);
 					System.arraycopy(tempNodes, middleNode, rightNodes, 0, m+1-middleNode);
-					Node leftNode = new Node(leftkey,middle,leftNodes);
-					Node rightNode = new Node(rightkey,m-(middle+1),rightNodes);
+					Node rightNode = newOrUpdate(null,rightdata,m+1-middle,rightNodes,node.nextNode);
+					node = newOrUpdate(node,leftdata,middle,leftNodes,rightNode);
 					//调整父节点
-					adjustParent(parent,index,leftNode,rightNode);
+					adjustParent(parent,index,node,rightNode);
 				}
 			}
 		}
@@ -251,7 +299,7 @@ public class BAdditionTree {
 		Node tempN = parent.children[index+1];
 		parent.children[index] = leftNode;
 		parent.children[index+1] = rightNode;
-		for(int i=index+1;i<parent.keyNumber;i++){
+		for(int i=index+1;i<parent.dataNumber-1;i++){
 			Node tn = parent.children[i+1];
 			parent.children[i+1]=tempN;
 			tempN = tn;
@@ -266,35 +314,68 @@ public class BAdditionTree {
 	 * @param ele 元素
 	 * @return
 	 */
-	public int getIndex(Node node,int ele){
+	public int getIndex(Node node,Entry<Integer,Object> entry){
 		if(node==null){
 			Assert.notNull(node, "获取下级索引时，节点不能为空！");
 		}
 		int start = 0;
-		int end = node.keyNumber-1;
+		int end = node.dataNumber-1;
 		int index;
 		while(true){
 			index = (end+start)/2;
-			if(node.key[index]>ele){
-				if(end==start||start==index){
-					return index;
-				}else{
-					end = index-1;
-					continue;
-				}
-			}else{
+			if(node.data[index].getKey()-entry.getKey()==0){
+				return index;
+			}else if(node.data[index].getKey()<entry.getKey()){
 				if(end==start){
-					return index+1;
+					return index;
 				}else{
 					start = index+1;
 					continue;
 				}
-				
+			}else{
+				if(end==start||start==index){
+					return index-1;
+				}else{
+					end = index-1;
+					continue;
+				}
 			}
 		}
 	}
 	
+	/**
+	 * 遍历叶子节点
+	 * @param node
+	 */
+	public void print(Node node){
+		if(node!=null){
+			System.out.print("tree:");
+			printNode(node);
+		}else{
+			System.out.println(" tree:null");
+		}
+		System.out.println(" size:"+size);
+	}
+	public void printNode(Node node){
+		while(node!=null){
+			for(int i=0;i<node.dataNumber;i++){
+				System.out.print(node.data[i]+",");
+			}
+			node = node.nextNode;
+		}
+	}
+	
 	public static void main(String[] args) {
-		
+		BAdditionTree bat = new BAdditionTree(3);
+		Integer[] arr = new Integer[]{5,18,26,30,8,11,3,1};
+		String[] str = new String[]{"a","b","c","d","e","f","g","h"};
+
+		Long startTime = System.currentTimeMillis();
+		for(int i=0;i<arr.length;i++){
+			bat.add(arr[i],str[i]);
+		}
+		Long endTime = System.currentTimeMillis();
+		System.out.println("插入"+arr.length+"条数据耗时"+(endTime-startTime)+"毫秒");
+		bat.print(bat.head.nextNode);
 	}
 }
