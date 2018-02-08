@@ -15,6 +15,7 @@ public class MapTest {
 		map2.put("id", 2);
 		map2.put("name", "nide老师肯定会烦死了电话费aaa");
 		map2.put("types", "2");
+		System.out.println(map2.put("name", "66"));
 		Random random = new Random();
 		int sum1 = 0;
 		int sum2 = 0;

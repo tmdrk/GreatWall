@@ -16,7 +16,8 @@ import com.test.common.util.Assert;
  *  这里：n:关键字的个数，ki（i=1,2,…,n)为关键字，且满足Ki<Ki+1,，Ai(i=0,1,..n)为指向子树的指针。
  * (5)所有的叶子结点都出现在同一层上，不带信息（可认为外部结点或失败结点）。
  * 
- * B树节点的状态有三种 full：代表节点有m棵子树   hunger：代表节点有[m/2]棵子树 unfull:代表节点有m-1到[m/2]+1棵子树
+ * 为方便理解假设B树节点的状态有三种   full：代表节点有m棵子树   hunger：代表节点有[m/2]棵子树 unfull:代表节点有m-1到[m/2]+1棵子树
+ * 
  * 对于m阶高度为h的B_树而言，最多含有m^h-1个关键字
  * 证明 :
  * S = (1+m+m^2+m^3+...+m^(h-1))*(m-1)
@@ -396,6 +397,11 @@ public class BUnderscodeTree {
 		}
 	}
 	
+	/**
+	 * 删除元素
+	 * @param ele
+	 * @return
+	 */
 	public Node delete(int ele){
 		Node retNode = delete(sentinel,0,ele);
 		if(getRoot()!=null&&getRoot().keyNumber==0){
