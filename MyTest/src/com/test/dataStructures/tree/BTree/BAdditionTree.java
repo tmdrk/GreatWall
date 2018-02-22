@@ -158,8 +158,8 @@ public class BAdditionTree {
 			Node node = parent.children[index];
 			//
 			if(node.data[0].getKey()>entry.getKey()){
-				System.out.println("测试小于情况");
-				node.data[0] = entry;
+//				System.out.println("测试小于情况");
+				node.data[0] = new SimpleEntry(entry.getKey(), null);
 			}
 			//递归调用
 			int inde = getIndex(parent.children[index],entry.getKey());
@@ -286,7 +286,7 @@ public class BAdditionTree {
 				//将节点数据拆分为两份
 				System.arraycopy(tempdatas, 0, leftdata, 0, middle);
 				System.arraycopy(tempdatas, middle, rightdata, 0, m+1-middle);
-				addData(parent,tempdatas[middle]);
+				addData(parent,new SimpleEntry(tempdatas[middle].getKey(),null));
 				
 				Node[] leftNodes = null;
 				Node[] rightNodes = null;
@@ -477,8 +477,7 @@ public class BAdditionTree {
 	 * @param desIndex
 	 */
 	private void copyKeyToParent(Node parent, Node node,int desIndex) {
-		parent.data[desIndex]=node.data[0];
-		parent.data[desIndex].setValue(null);
+		parent.data[desIndex]=new SimpleEntry<>(node.data[0].getKey(), null);
 	}
 	/**
 	 * 检查删除后节点状态
@@ -649,20 +648,22 @@ public class BAdditionTree {
 	}
 	public void printNode(Node node){
 		while(node!=null){
+			System.out.print("[");
 			for(int i=0;i<node.dataNumber;i++){
 				System.out.print(node.data[i]+",");
 			}
+			System.out.print("]");
 			node = node.nextNode;
 		}
 	}
 	
 	public static void main(String[] args) {
-		BAdditionTree bat = new BAdditionTree(3);
+		BAdditionTree bat = new BAdditionTree(5);
 //		Integer[] arr = new Integer[]{5,18,26,30,8,11,3,1};
 //		String[] str = new String[]{"a","b","c","d","e","f","g","h"};
 		
-		Integer[] arr = new Integer[]{5,18,26,30,8,11,3,1,6,7,9,10,2,4,0,12,13,14};
-		String[] str = new String[]{"a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r"};
+		Integer[] arr = new Integer[]{5,28,36,40,8,21,3,1,6,7,18,20,2,4,0,22,23,24,19};
+		String[] str = new String[]{"a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s"};
 
 		Long startTime = System.currentTimeMillis();
 		for(int i=0;i<arr.length;i++){
@@ -670,6 +671,9 @@ public class BAdditionTree {
 		}
 		Long endTime = System.currentTimeMillis();
 		System.out.println("插入"+arr.length+"条数据耗时"+(endTime-startTime)+"毫秒");
+		bat.print(bat.head.nextNode);
+		
+		bat.delete(22);
 		bat.print(bat.head.nextNode);
 	}
 }
