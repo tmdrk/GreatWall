@@ -339,6 +339,7 @@ public class BAdditionTree {
 		}
 		return obj;
 	}
+
 	public Object delete(Node parent,int index,int ele){
 		Object ret = null;
 		if(parent.children==null){
@@ -360,10 +361,19 @@ public class BAdditionTree {
 				checkDelNode(parent,index);
 			}
 		}else{
-			ret = delete(node,getIndex(node,ele),ele);
+			int childIndex = getIndex(node,ele);
+			if(childIndex==-1){
+				return null;
+			}
+			ret = delete(node,childIndex,ele);
 			//检查删除后节点状态
 			if(!getRoot().equals(node)){
 				checkDelNode(parent,index);
+				//检查是否需要调整上级节点关键字
+				if(parent.data[index]!=null&&!parent.data[index].getKey().equals(node.data[0].getKey())) {
+					parent.data[index]=new SimpleEntry(node.data[0].getKey(), null);
+				}
+				
 			}
 		}
 		return ret;
@@ -521,26 +531,26 @@ public class BAdditionTree {
 					//删除左边节点最大值并返回被删除元素
 					Entry temData = delData(parent,index-1,lnode.dataNumber-1);
 					//替换父节点n-1位置的值，并返回被替换元素
-//					temData = repData(parent,index,temData);
+					repData(parent,index,temData);
 					//将父节点被动、替换元素插入不平衡节点
 					addData(node,temData);
 					if(node.children!=null){
 						//如果子节点不为空，则需要把删除对应的子节点转移到新增数据子节点前面
-						Node temNode = delChildNode(lnode,lnode.dataNumber+1,lnode.dataNumber+2);
+						Node temNode = delChildNode(lnode,lnode.dataNumber,lnode.dataNumber+1);
 						addChildNode(node,0,temNode);
 					}
 				}else{
 					//右边节点参与交换
-					//删除左边节点最大值并返回被删除元素
+					//删除右边节点最小值并返回被删除元素
 					Entry temData = delData(parent,index+1,0);
 					//替换父节点n位置的值，并返回被替换元素
-					temData = repData(parent,index,temData);
+					repData(parent,index,temData);
 					//将父节点被动、替换元素插入不平衡节点
 					addData(node,temData);
 					if(node.children!=null){
 						//如果子节点不为空，则需要把删除对应的子节点转移到新增数据子节点后面
-						Node temNode = delChildNode(rnode,0);
-						addChildNode(node,node.dataNumber,temNode);
+						Node temNode = delChildNode(rnode,0,false);
+						addChildNode(node,node.dataNumber-1,temNode);
 					}
 				}
 			}else{
@@ -548,19 +558,17 @@ public class BAdditionTree {
 				if(leftKey>=rightKey){
 					//左节点参与合并
 					//数据合并
-//					System.arraycopy(parent.data, index-1, lnode.data, lnode.dataNumber, 1);
 					System.arraycopy(node.data, 0, lnode.data, lnode.dataNumber, node.dataNumber);
 					if(node.children!=null){
 						//如果子节点不为空，参与合并的两个节点的孩子也要合并
 						System.arraycopy(node.children, 0, lnode.children, lnode.dataNumber, node.dataNumber);
 					}
 					lnode.dataNumber = node.dataNumber+lnode.dataNumber;
-					delChildNode(parent,index);
+					delChildNode(parent,index,true);
 					delData(parent,index);
 				}else{
 					//右节点参与合并
 					//数据合并
-//					System.arraycopy(parent.data, index, node.data, node.dataNumber, 1);
 					System.arraycopy(rnode.data, 0, node.data, node.dataNumber, rnode.dataNumber);
 					if(node.children!=null){
 						//如果子节点不为空，参与合并的两个节点的孩子也要合并
@@ -568,7 +576,7 @@ public class BAdditionTree {
 					}
 					node.dataNumber = node.dataNumber+rnode.dataNumber;
 					//删除父节点data，和child
-					delChildNode(parent,index+1);
+					delChildNode(parent,index+1,true);
 					delData(parent,index+1);
 				}
 			}
@@ -591,7 +599,7 @@ public class BAdditionTree {
 	 */
 	public Entry repData(Node node,int index,Entry entry){
 		Entry temp = node.data[index];
-		node.data[index]=entry;
+		node.data[index]=new SimpleEntry(entry.getKey(), null);
 		return temp;
 	}
 	
@@ -601,12 +609,22 @@ public class BAdditionTree {
 	 * @param index children索引
 	 * @return
 	 */
-	public Node delChildNode(Node node,int index){
-		Node ret = node.children[index];
-		for(int i=index;i<node.dataNumber+1;i++){
-			node.children[i] = node.children[i+1];
+	public Node delChildNode(Node node,int index,boolean isAbandon){
+		try {
+			Node ret = node.children[index];
+			for(int i=index;i<node.dataNumber;i++){
+				node.children[i] = node.children[i+1];
+			}
+			if(isAbandon) {
+				//若丢弃该节点，需要修改上个几点的nextNode
+				node.children[index-1].nextNode = ret.nextNode;
+			}
+			return ret;
+		} catch (Exception e) {
+			System.out.println();
+			e.printStackTrace();
 		}
-		return ret;
+		return null;
 	}
 	/**
 	 * 删除index对应孩子节点并返回（当节点关键字不能准确反映children长度时使用该方法）
@@ -659,21 +677,69 @@ public class BAdditionTree {
 	
 	public static void main(String[] args) {
 		BAdditionTree bat = new BAdditionTree(5);
+		
+		BAdditionTree bat2 = new BAdditionTree(5);
+		BAdditionTree bat3 = new BAdditionTree(5);
+		
+		int length = 100;
+		int[] data = new int[length];
+		String[] strs = new String[length];
+		Random r = new Random();
+		for(int i=0;i<length;i++){
+			int tem = r.nextInt(length*10);
+			data[i]=tem;
+			strs[i]="a"+tem;
+		}
+		
 //		Integer[] arr = new Integer[]{5,18,26,30,8,11,3,1};
 //		String[] str = new String[]{"a","b","c","d","e","f","g","h"};
 		
-		Integer[] arr = new Integer[]{5,28,36,40,8,21,3,1,6,7,18,20,2,4,0,22,23,24,19};
+//		Integer[] arr = new Integer[]{5,28,36,40,8,21,3,1,6,7,18,20,2,4,0,22,23,24,25,50,60,70};
+//		String[] str = new String[]{"a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","u","v","w"};
+		Integer[] arr = new Integer[]{5,28,36,40,8,21,3,1,6,7,18,20,2,4,0,22,23,24,25};
 		String[] str = new String[]{"a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s"};
-
+		
 		Long startTime = System.currentTimeMillis();
-		for(int i=0;i<arr.length;i++){
-			bat.add(arr[i],str[i]);
+		for(int i=0;i<data.length;i++){
+			bat.add(data[i],strs[i]);
 		}
 		Long endTime = System.currentTimeMillis();
-		System.out.println("插入"+arr.length+"条数据耗时"+(endTime-startTime)+"毫秒");
+		System.out.println("插入"+data.length+"条数据耗时"+(endTime-startTime)+"毫秒");
 		bat.print(bat.head.nextNode);
 		
-		bat.delete(22);
+		
+		int k=0;
+		for(int i=0;i<data.length;i++){
+			System.out.println(data[i]+":"+bat.delete(data[i]));
+			k++;
+			if(k%10==0) {
+				bat.print(bat.head.nextNode);
+			}
+		}
 		bat.print(bat.head.nextNode);
+		
+		for(int i=0;i<data.length;i++){
+			bat2.add(data[i],strs[i]);
+		}
+		for(int i=0;i<data.length;i++){
+			System.out.println(data[i]+":"+bat2.delete(data[i]));
+			k++;
+			if(k%10==0) {
+				bat2.print(bat2.head.nextNode);
+			}
+		}
+		bat.print(bat2.head.nextNode);
+		
+		for(int i=0;i<data.length;i++){
+			bat3.add(data[i],strs[i]);
+		}
+		for(int i=0;i<data.length;i++){
+			System.out.println(data[i]+":"+bat3.delete(data[i]));
+			k++;
+			if(k%10==0) {
+				bat3.print(bat3.head.nextNode);
+			}
+		}
+		bat.print(bat3.head.nextNode);
 	}
 }
