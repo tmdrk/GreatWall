@@ -4,10 +4,7 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.Map.Entry;
-
-import com.alibaba.fastjson.JSON;
 import com.test.common.util.Assert;
-import com.test.dataStructures.tree.BTree.BUnderscodeTree.Node;
 
 /**
  * B+树
@@ -91,7 +88,6 @@ public class BAdditionTree {
 		public void setdataNumber(int dataNumber) {
 			this.dataNumber = dataNumber;
 		}
-		@SuppressWarnings("rawtypes")
 		public Entry[] getdata() {
 			return data;
 		}
@@ -127,10 +123,34 @@ public class BAdditionTree {
 		return sentinel.children[0];
 	}
 	
-	public Object add(int ele,Object obj){
-		if(ele==8){
-			System.out.println();
+	/**
+	 * 二分法获取元素所在节点
+	 * @param ele
+	 * @return
+	 */
+	public Node getNode(Integer ele){
+		Node node = getRoot();
+		if(node==null){
+			return null;
 		}
+		while(true) {
+			if(node.children==null) {
+				int temp = getDataIndex(node,ele);
+				if(temp<0) {
+					return null;
+				}
+				return node;
+			}else{
+				int temp = getIndex(node,ele);
+				if(temp<0) {
+					return null;
+				}
+				node = node.children[temp];
+			}
+		}
+	}
+	
+	public Object add(int ele,Object obj){
 		Entry<Integer,Object> entry = new SimpleEntry<Integer,Object>(ele, obj);
 		Object result = add(sentinel,0,entry);
 		if(result==null){
@@ -139,9 +159,6 @@ public class BAdditionTree {
 		return result;
 	}
 	public Object add(Node parent,int index,Entry<Integer,Object> entry){
-		if(entry.getKey()==3){
-			System.out.println();
-		}
 		Object result = null;
 		if(parent.children==null){
 			parent.children = new Node[1];
@@ -328,9 +345,7 @@ public class BAdditionTree {
 	public Object delete(int ele){
 		Object obj = delete(sentinel,0,ele);
 		if(getRoot()!=null&&getRoot().dataNumber==1){
-			if(getRoot().children==null){
-				sentinel.children = null;
-			}else{
+			if(getRoot().children!=null){
 				sentinel.children[0]=getRoot().children[0];
 			}
 		}
@@ -370,8 +385,9 @@ public class BAdditionTree {
 			if(!getRoot().equals(node)){
 				checkDelNode(parent,index);
 				//检查是否需要调整上级节点关键字
-				if(parent.data[index]!=null&&!parent.data[index].getKey().equals(node.data[0].getKey())) {
-					parent.data[index]=new SimpleEntry(node.data[0].getKey(), null);
+				Node tnode = parent.children[index];
+				if(parent.data[index]!=null&&!parent.data[index].getKey().equals(tnode.data[0].getKey())) {
+					parent.data[index]=new SimpleEntry(tnode.data[0].getKey(), null);
 				}
 				
 			}
@@ -416,7 +432,7 @@ public class BAdditionTree {
 		}
 	}
 	/**
-	 * 二分法获取data索引
+	 * 二分法获取data索引，key不存在返回 -1
 	 * @param node 当前节点
 	 * @param start 开始索引
 	 * @param end 结束索引
@@ -466,7 +482,7 @@ public class BAdditionTree {
 		System.arraycopy(node.data, desIndex+1, node.data,desIndex,node.dataNumber-(desIndex+1));
 		node.data[node.dataNumber-1] = null;
 		node.dataNumber--;
-		if(desIndex==0){
+		if(desIndex==0&&!getRoot().equals(node)){
 			copyKeyToParent(parent,node,index);
 		}
 		return ret;
@@ -544,7 +560,7 @@ public class BAdditionTree {
 					//删除右边节点最小值并返回被删除元素
 					Entry temData = delData(parent,index+1,0);
 					//替换父节点n位置的值，并返回被替换元素
-					repData(parent,index,temData);
+//					repData(parent,index,temData);
 					//将父节点被动、替换元素插入不平衡节点
 					addData(node,temData);
 					if(node.children!=null){
@@ -610,21 +626,15 @@ public class BAdditionTree {
 	 * @return
 	 */
 	public Node delChildNode(Node node,int index,boolean isAbandon){
-		try {
-			Node ret = node.children[index];
-			for(int i=index;i<node.dataNumber;i++){
-				node.children[i] = node.children[i+1];
-			}
-			if(isAbandon) {
-				//若丢弃该节点，需要修改上个几点的nextNode
-				node.children[index-1].nextNode = ret.nextNode;
-			}
-			return ret;
-		} catch (Exception e) {
-			System.out.println();
-			e.printStackTrace();
+		Node ret = node.children[index];
+		for(int i=index;i<node.dataNumber;i++){
+			node.children[i] = node.children[i+1];
 		}
-		return null;
+		if(isAbandon) {
+			//若丢弃该节点，需要修改上个几点的nextNode
+			node.children[index-1].nextNode = ret.nextNode;
+		}
+		return ret;
 	}
 	/**
 	 * 删除index对应孩子节点并返回（当节点关键字不能准确反映children长度时使用该方法）
@@ -676,12 +686,9 @@ public class BAdditionTree {
 	}
 	
 	public static void main(String[] args) {
-		BAdditionTree bat = new BAdditionTree(5);
+		BAdditionTree bat = new BAdditionTree(10);
 		
-		BAdditionTree bat2 = new BAdditionTree(5);
-		BAdditionTree bat3 = new BAdditionTree(5);
-		
-		int length = 100;
+		int length = 100000;
 		int[] data = new int[length];
 		String[] strs = new String[length];
 		Random r = new Random();
@@ -690,56 +697,41 @@ public class BAdditionTree {
 			data[i]=tem;
 			strs[i]="a"+tem;
 		}
-		
+//		for(int i=0;i<data.length;i++) {
+//			System.out.print(data[i]+",");
+//		}
+//		System.out.println();
+//		for(int i=0;i<strs.length;i++) {
+//			System.out.print("\""+strs[i]+"\",");
+//		}
+//		System.out.println();
 //		Integer[] arr = new Integer[]{5,18,26,30,8,11,3,1};
 //		String[] str = new String[]{"a","b","c","d","e","f","g","h"};
 		
 //		Integer[] arr = new Integer[]{5,28,36,40,8,21,3,1,6,7,18,20,2,4,0,22,23,24,25,50,60,70};
 //		String[] str = new String[]{"a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","u","v","w"};
-		Integer[] arr = new Integer[]{5,28,36,40,8,21,3,1,6,7,18,20,2,4,0,22,23,24,25};
-		String[] str = new String[]{"a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s"};
-		
+//		Integer[] arr = new Integer[]{778,23,877,126,604,368,308,523,899,479,577,186,385,862,428,29,437,611,56,607,524,178,796,901,908,950,508,451,238,32,547,258,207,0,639,816,875,712,930,552,639,617,360,136,754,364,730,602,991,347,941,450,601,128,95,590,347,794,704,507,867,193,49,164,482,271,5,342,644,502,624,431,598,64,775,884,496,858,86,401,337,114,688,612,17,695,390,475,376,567,991,387,712,603,480,746,25,703,881,68};
+//		String[] str = new String[]{"a778","a23","a877","a126","a604","a368","a308","a523","a899","a479","a577","a186","a385","a862","a428","a29","a437","a611","a56","a607","a524","a178","a796","a901","a908","a950","a508","a451","a238","a32","a547","a258","a207","a0","a639","a816","a875","a712","a930","a552","a639","a617","a360","a136","a754","a364","a730","a602","a991","a347","a941","a450","a601","a128","a95","a590","a347","a794","a704","a507","a867","a193","a49","a164","a482","a271","a5","a342","a644","a502","a624","a431","a598","a64","a775","a884","a496","a858","a86","a401","a337","a114","a688","a612","a17","a695","a390","a475","a376","a567","a991","a387","a712","a603","a480","a746","a25","a703","a881","a68"};
+//		
 		Long startTime = System.currentTimeMillis();
 		for(int i=0;i<data.length;i++){
 			bat.add(data[i],strs[i]);
 		}
 		Long endTime = System.currentTimeMillis();
 		System.out.println("插入"+data.length+"条数据耗时"+(endTime-startTime)+"毫秒");
+//		bat.print(bat.head.nextNode);
+		
+//		System.out.println("查找："+data[100]+" 返回结果为--> "+bat.getNode(data[100]++));
+//		System.out.println("查找："+data[100]+" 返回结果为--> "+bat.getNode(data[100]++));
+//		System.out.println("查找："+data[100]+" 返回结果为--> "+bat.getNode(data[100]++));
+//		System.out.println("查找："+data[100]+" 返回结果为--> "+bat.getNode(data[100]++));
+
+		Long startTime1 = System.currentTimeMillis();
+		for(int i=0;i<data.length;i++){
+			bat.delete(data[i]);
+		}
+		Long endTime1 = System.currentTimeMillis();
+		System.out.println("删除"+data.length+"条数据耗时"+(endTime1-startTime1)+"毫秒");
 		bat.print(bat.head.nextNode);
-		
-		
-		int k=0;
-		for(int i=0;i<data.length;i++){
-			System.out.println(data[i]+":"+bat.delete(data[i]));
-			k++;
-			if(k%10==0) {
-				bat.print(bat.head.nextNode);
-			}
-		}
-		bat.print(bat.head.nextNode);
-		
-		for(int i=0;i<data.length;i++){
-			bat2.add(data[i],strs[i]);
-		}
-		for(int i=0;i<data.length;i++){
-			System.out.println(data[i]+":"+bat2.delete(data[i]));
-			k++;
-			if(k%10==0) {
-				bat2.print(bat2.head.nextNode);
-			}
-		}
-		bat.print(bat2.head.nextNode);
-		
-		for(int i=0;i<data.length;i++){
-			bat3.add(data[i],strs[i]);
-		}
-		for(int i=0;i<data.length;i++){
-			System.out.println(data[i]+":"+bat3.delete(data[i]));
-			k++;
-			if(k%10==0) {
-				bat3.print(bat3.head.nextNode);
-			}
-		}
-		bat.print(bat3.head.nextNode);
 	}
 }

@@ -7,7 +7,7 @@ import com.alibaba.fastjson.JSON;
 public class B_Test {
 	public static final int m = 100;
 	public static void main(String[] args) {
-		int length = 100000;
+		int length = 1000000;
 		int[] data = new int[length];
 		Random r = new Random();
 		for(int i=0;i<length;i++){
@@ -15,8 +15,10 @@ public class B_Test {
 		}
 		int[] data1 = data.clone();
 		int[] data2 = data.clone();
+		int[] data3 = data.clone();
 		BUnderscodeTree but1 = new BUnderscodeTree(m);
 		BUnderscodeTree2 but2 = new BUnderscodeTree2(m);
+		BAdditionTree bat1 = new BAdditionTree(m);
 		
 //		int[] d1 = new int[length];
 //		for(int i=0;i<length;i++){
@@ -53,7 +55,7 @@ public class B_Test {
 		System.out.println("删除"+data1.length+"条数据耗时"+(endTime14-startTime14)+"毫秒");
 //		System.out.println(JSON.toJSONString(but1.getRoot(),true));
 		
-		System.out.println();
+		System.out.println("-----------------------------------------------------------");
 				
 		Long startTime21 = System.currentTimeMillis();
 		for(int i=0;i<data2.length;i++){
@@ -84,5 +86,36 @@ public class B_Test {
 		Long endTime24 = System.currentTimeMillis();
 		System.out.println("删除"+data2.length+"条数据耗时"+(endTime24-startTime24)+"毫秒");
 //		System.out.println(JSON.toJSONString(but2.getRoot(),true));
+		
+		System.out.println("-----------------------------------------------------------");
+		
+		Long startTime31 = System.currentTimeMillis();
+		for(int i=0;i<data3.length;i++){
+			bat1.add(data3[i],0);
+		}
+		Long endTime31 = System.currentTimeMillis();
+		System.out.println("插入"+data1.length+"条数据耗时"+(endTime31-startTime31)+"毫秒");
+		
+		Long startTime32 = System.currentTimeMillis();
+		for(int i=0;i<data3.length;i++){
+			bat1.getNode(data3[i]);
+		}
+		Long endTime32 = System.currentTimeMillis();
+		System.out.println("查询"+data3.length+"条数据耗时"+(endTime32-startTime32)+"毫秒");
+		
+		Long startTime33 = System.currentTimeMillis();
+		for(int i=0;i<data3.length;i++){
+//			bat1.getAddNode(data3[i]);
+		}
+		Long endTime33 = System.currentTimeMillis();
+		System.out.println("获取添加节点，查询"+data3.length+"条数据耗时"+(endTime33-startTime33)+"毫秒");
+		
+		Long startTime34 = System.currentTimeMillis();
+		for(int i=0;i<data3.length;i++){
+			bat1.delete(data3[i]);
+		}
+		Long endTime34 = System.currentTimeMillis();
+		System.out.println("删除"+data3.length+"条数据耗时"+(endTime34-startTime34)+"毫秒");
+//		System.out.println(JSON.toJSONString(but1.getRoot(),true));
 	}
 }
