@@ -1,5 +1,7 @@
 package com.test.dataStructures.tree.rbTree;
 
+import com.test.common.util.Assert;
+
 /**
  * 红黑树
  * 红黑树需要满足的五条性质： 
@@ -54,10 +56,11 @@ public class RBTree {
 		}
 		@Override
 		public String toString() {
-			return "[" + key + "=" + value + "]";
+			return key + ":" + value + ":" + (red?"red":"black");
 		}
 		
 	}
+	
 	/**
 	 * 插入元素
 	 * @param key
@@ -75,23 +78,19 @@ public class RBTree {
 					Node left = new Node(key,value,node);
 					node.leftNode = left;
 					//检查添加后节点是否符合红黑树要求
-					if(node.red==RED){
-						checkNode(left,true);
-					}
+					checkNode(left);
 					return null;
 				}
 				node = node.leftNode;
 			}else if(node.key < key){
-				node = node.rightNode;
 				if(node.rightNode==null) {
 					Node right = new Node(key,value,node);
 					node.rightNode = right;
 					//检查添加后节点是否符合红黑树要求
-					if(node.red==RED){
-						checkNode(right,false);
-					}
+					checkNode(right);
 					return null;
 				}
+				node = node.rightNode;
 			}else {
 				Object o = node.value;
 				node.value = value;
@@ -101,24 +100,43 @@ public class RBTree {
 		return null;
 	}
 	
-	public void checkNode(Node node,boolean isLeft){
-		if(isLeft){
-			Node uncle = node.parent.rightNode;
-			if(uncle!=null&&uncle.red==RED) {
-				node.red = BLACK;
-				uncle.red = BLACK;
-			}else{
-				
-			}
-		}else {
-			Node uncle = node.parent.leftNode;
-			if(uncle!=null&&uncle.red==RED) {
-				node.red = BLACK;
-				uncle.red = BLACK;
-			}else{
-				
+	public void checkNode(Node node){
+		while(node!=null&&node!=root&&node.parent.red==RED) {
+			if(isLeftNode(node.parent)){
+				Node uncle = getRelative(node,Relative.uncle);
+				if(uncle!=null&&uncle.red==RED) {
+					node.parent.red = BLACK;
+					uncle.red = BLACK;
+					node.parent.parent.red = RED;
+					node = getRelative(node,Relative.grandFather);
+				}else{
+					if(!isLeftNode(node)){
+						node = node.parent;
+						rotateLeft(node);
+					}
+					node.parent.red = false;
+					node.parent.parent.red = true;
+					rotateRight(node.parent.parent);
+				}
+			}else {
+				Node uncle = getRelative(node,Relative.uncle);
+				if(uncle!=null&&uncle.red==RED) {
+					node.parent.red = BLACK;
+					uncle.red = BLACK;
+					node.parent.parent.red = RED;
+					node = getRelative(node,Relative.grandFather);
+				}else{
+					if(isLeftNode(node)){
+						node = node.parent;
+						rotateRight(node);
+					}
+					node.parent.red = false;
+					node.parent.parent.red = true;
+					rotateLeft(node.parent.parent);
+				}
 			}
 		}
+		root.red = false;
 	}
 	
 	public boolean isRoot(Node node) {
@@ -149,5 +167,116 @@ public class RBTree {
 			}
 		}
 		return false;
+	}
+	
+	/**
+	 * 获取亲属节点
+	 * @param node
+	 * @param relationship
+	 * @return
+	 */
+	private Node getRelative(Node node,Relative relationship) {
+		Assert.notNull(node, "获取亲属时节点不能为空！");
+		
+		Node relative = null;
+		switch (relationship) {
+		case brother:
+			Assert.notNull(node.parent, "获取兄弟节点时，父亲节点不能为空！");
+			relative = isLeftNode(node)?node.parent.rightNode:node.parent.leftNode;
+			break;
+		case father:
+			relative = node.parent;
+			break;
+		case uncle:
+			Assert.notNull(node.parent, "获取叔父节点时，父亲节点不能为空！");
+			Assert.notNull(node.parent.parent, "获取叔父节点时，祖父节点不能为空！");
+			relative = isLeftNode(node.parent)?node.parent.parent.rightNode:node.parent.parent.leftNode;
+			break;
+		case grandFather:
+			Assert.notNull(node.parent, "获取祖父节点时，父亲节点不能为空！");
+			relative = node.parent.parent;
+			break;
+		case greatGrandFather:
+			Assert.notNull(node.parent, "获取曾祖父节点时，父亲节点不能为空！");
+			Assert.notNull(node.parent.parent, "获取曾祖父节点时，祖父节点不能为空！");
+			relative = node.parent.parent.parent;
+			break;
+		}
+		return relative;
+	}
+	
+	/**
+	 * 亲属关系
+	 * @author zhoujie
+	 *
+	 */
+	public enum Relative {  
+		brother, father, uncle, grandFather ,greatGrandFather 
+	}
+	
+	/**
+	 * 右旋
+	 * @param node
+	 */
+	public void rotateRight(Node node){
+		if(node!=null){
+			Node l = node.leftNode;
+			node.leftNode = l.rightNode;
+			if(l.rightNode!=null) {
+				l.rightNode.parent = node;
+			}
+			if(node.parent==null) {
+				root = l;
+			}else if(node.parent.leftNode==node) {
+				node.parent.leftNode = l;
+			}else {
+				node.parent.rightNode = l;
+			}
+			l.rightNode = node;
+			node.parent = l;
+		}
+	}
+	
+	public void rotateLeft(Node node){
+		if(node!=null){
+			Node r = node.rightNode;
+			node.rightNode = r.leftNode;
+			if(r.leftNode!=null) {
+				r.leftNode.parent = node;
+			}
+			if(node.parent==null) {
+				root = r;
+			}else if(node.parent.rightNode==node) {
+				node.parent.rightNode = r;
+			}else {
+				node.parent.leftNode = r;
+			}
+			r.leftNode = node;
+			node.parent = r;
+		}
+	}
+	
+	public void printTree( ){
+		printTree(root);
+	}
+	public void printTree(Node node){
+		if(node==null)return;  
+		if(node==root){
+			System.out.print("["+node.toString()+"];");
+		}else{
+			System.out.print(node.toString()+";");
+		}
+		printTree(node.leftNode);
+		printTree(node.rightNode);
+	}
+	
+	public static void main(String[] args) {
+		RBTree rbt = new RBTree();
+		int[] data = {20,15,30,16,13,26,35,25,32,38,40};
+		for(int i=0;i<data.length;i++){
+			rbt.put(data[i],null);
+		}
+		
+		rbt.printTree();
 	}
 }
