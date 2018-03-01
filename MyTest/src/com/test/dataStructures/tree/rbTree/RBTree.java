@@ -10,7 +10,8 @@ import com.test.common.util.Assert;
  * 性质三：每个叶节点（NIL或空节点）是黑色；
  * 性质四：每个红色节点的两个子节点都是黑色的（也就是说不存在两个连续的红色节点）；
  * 性质五：从任一节点到其没个叶节点的所有路径都包含相同数目的黑色节点；
- * http://blog.csdn.net/sun_tttt/article/details/65445754
+ * http://blog.csdn.net/sun_tttt/article/details/65445754  	新增删除规则
+ * http://blog.chinaunix.net/uid-26548237-id-3480169.html   图解新增删除
  * http://blog.csdn.net/yang_yulei/article/details/26066409 可以用2-3树理解红黑树
  * 
  * @author zhoujie
@@ -254,6 +255,223 @@ public class RBTree {
 			r.leftNode = node;
 			node.parent = r;
 		}
+	}
+	
+	/**
+	 * 删除元素
+	 * @param key
+	 * @return
+	 */
+	public Object remove(int key) {
+		Node node = findNode(key);
+		if(node == null) {
+			return null;
+		}
+		if(node==root) {
+			root = null;
+			return node.value;
+		}
+		if(isLeftNode(node)) {
+			if(node.leftNode==null&&node.rightNode==null) {
+				if(node.red==RED) {
+					if(isLeftNode(node)){
+						node.parent.leftNode = null;
+					}else {
+						node.parent.rightNode = null;
+					}
+					return node.value;
+				}else {
+					//1:当被删除元素为黑，且兄弟节点为黑,父节点为红
+					Node brother = getRelative(node, Relative.brother);
+					if(node.parent.red==RED&&brother.red==BLACK) {
+						if(isLeaf(brother)) {
+							//兄弟节点两个孩子也为黑(null表示黑节点)，此时，交换兄弟节点与父节点的颜色；
+							node.parent.red = BLACK;
+							brother.red = RED;
+							removeUnfullNode(node);
+						}else if(isFull(brother)) {
+							//兄弟节点两个孩子也为红，
+							node.parent.red = BLACK;
+							node.parent.rightNode.red = RED;
+							node.parent.rightNode.rightNode.red = BLACK;
+							removeUnfullNode(node);
+							rotateLeft(node.parent);
+						}else {
+							if(brother.leftNode!=null) {
+								brother.red = RED;
+								brother.leftNode.red = BLACK;
+								rotateRight(brother);
+							}
+							removeUnfullNode(node);
+							rotateLeft(node.parent);
+						}
+					}
+					//2:当被删除元素为黑、且兄弟颜色为黑，父节点为黑
+					if(node.parent.red==BLACK&&brother.red==BLACK) {
+						if(isLeaf(brother)) {
+							//将兄弟节点变为红，再把父亲看做那个被删除的元素（只是看做，实际上不删除），
+							//看看父亲符和哪一条删除规则，进行处理变化
+							brother.red = RED;
+							
+						}else if(isFull(brother)) {
+							node.parent.rightNode.rightNode.red = BLACK;
+							removeUnfullNode(node);
+							rotateLeft(node.parent);
+						}else {
+							if(brother.leftNode!=null) {
+								brother.leftNode.red = BLACK;
+								rotateRight(brother);
+							}
+							brother.rightNode.red = BLACK;
+							removeUnfullNode(node);
+							rotateLeft(node.parent);
+						}
+					}
+				}
+			}else if(node.rightNode==null) {
+				if(node.red==RED) {
+					if(isLeftNode(node)){
+						node.parent.leftNode = node.leftNode;
+					}else {
+						node.parent.rightNode = node.leftNode;
+					}
+					return node.value;
+				}else {
+					
+				}
+			}else if(node.leftNode==null) {
+				if(node.red==RED) {
+					if(isLeftNode(node)){
+						node.parent.leftNode = node.rightNode;
+					}else {
+						node.parent.rightNode = node.rightNode;
+					}
+					return node.value;
+				}else {
+					
+				}
+			}else {
+				//左右节点都不为空时，找到当前节点的后继节点，将后继节点key和value赋给当前节点，然后做删除后继节点操作
+				Node succeed = findSucceedNode(node);
+				Object oldValue = node.value;
+				copyKV(succeed,node);
+				node = succeed;
+				node.value = oldValue;//返回值
+				if(node.red==RED) {
+					if(isLeftNode(node)){
+						node.parent.leftNode = null;
+					}else {
+						node.parent.rightNode = null;
+					}
+					return node.value;
+				}else {
+					
+				}
+			}
+		}else {
+			
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * 查找节点
+	 * @param key
+	 * @return
+	 */
+	public Node findNode(int key) {
+		Node node = root;
+		while(node!=null) {
+			if(node.key > key) {
+				node = node.leftNode;
+			}else if(node.key < key) {
+				node = node.rightNode;
+			}else {
+				return node;
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * 获取后继节点
+	 * @param key
+	 * @return
+	 */
+	public Node findSucceedNode(Node node) {
+		Assert.notNull(node, "获取后继节点时，节点不能为空！");
+		if(node.rightNode==null) {
+			return null;
+		}
+		node = node.rightNode;
+		while(node.leftNode!=null) {
+			node = node.leftNode;
+		}
+		return node;
+	}
+
+	/**
+	 * 获取前继节点
+	 * @param node
+	 * @return
+	 */
+	public Node findFollowingAgoNode(Node node) {
+		Assert.notNull(node, "获取前继节点时，节点不能为空！");
+		if(node.leftNode==null) {
+			return null;
+		}
+		node = node.leftNode;
+		while(node.rightNode!=null) {
+			node = node.rightNode;
+		}
+		return node;
+	}
+	
+	/**
+	 * 复制key value到目的节点
+	 * @param ori
+	 * @param des
+	 */
+	public void copyKV(Node ori,Node des) {
+		des.key = ori.key;
+		des.value = ori.value;
+	}
+	
+	/**
+	 * 删除节点（该节点需满足不同时含有左右子树）
+	 * @param node
+	 */
+	public void removeUnfullNode(Node node){
+		if(isLeftNode(node)) {
+			node.parent.leftNode = node.leftNode==null?node.rightNode:node.leftNode;
+		}else {
+			node.parent.rightNode = node.leftNode==null?node.rightNode:node.leftNode;
+		}
+	}
+	
+	/**
+	 * 是否拥有两个子节点
+	 * @param node
+	 * @return
+	 */
+	public boolean isFull(Node node) {
+		if(node.leftNode!=null&&node.rightNode!=null) {
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * 是否是叶子
+	 * @param node
+	 * @return
+	 */
+	public boolean isLeaf(Node node) {
+		if(node.leftNode==null&&node.rightNode==null) {
+			return true;
+		}
+		return false;
 	}
 	
 	public void printTree( ){
