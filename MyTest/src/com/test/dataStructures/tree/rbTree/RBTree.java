@@ -271,108 +271,92 @@ public class RBTree {
 			root = null;
 			return node.value;
 		}
+		if(isFull(node)) {
+			//左右节点都不为空时，找到当前节点的后继节点，将后继节点key和value赋给当前节点，然后做删除后继节点操作
+			Node successor = findSuccessorNode(node);
+			copyKV(successor,node);
+			node = successor;
+		}
+		removeUnfullNode(node);
+		fixAfterDeletion(node);
+		return node.value;
+	}
+	
+	public void fixAfterDeletion(Node node){
 		if(isLeftNode(node)) {
 			if(node.leftNode==null&&node.rightNode==null) {
-				if(node.red==RED) {
-					if(isLeftNode(node)){
-						node.parent.leftNode = null;
+				//1:当被删除元素为黑，且兄弟节点为黑,父节点为红
+				Node brother = getRelative(node, Relative.brother);
+				if(node.parent.red==RED&&brother.red==BLACK) {
+					if(isLeaf(brother)) {
+						//兄弟节点两个孩子也为黑(null表示黑节点)，此时，交换兄弟节点与父节点的颜色；
+						node.parent.red = BLACK;
+						brother.red = RED;
+					}else if(isFull(brother)) {
+						//兄弟节点两个孩子也为红，
+						node.parent.red = BLACK;
+						brother.red = RED;
+						brother.rightNode.red = BLACK;
+						rotateLeft(brother.parent);
 					}else {
-						node.parent.rightNode = null;
-					}
-					return node.value;
-				}else {
-					//1:当被删除元素为黑，且兄弟节点为黑,父节点为红
-					Node brother = getRelative(node, Relative.brother);
-					if(node.parent.red==RED&&brother.red==BLACK) {
-						if(isLeaf(brother)) {
-							//兄弟节点两个孩子也为黑(null表示黑节点)，此时，交换兄弟节点与父节点的颜色；
-							node.parent.red = BLACK;
+						if(brother.leftNode!=null) {
 							brother.red = RED;
-							removeUnfullNode(node);
-						}else if(isFull(brother)) {
-							//兄弟节点两个孩子也为红，
-							node.parent.red = BLACK;
-							node.parent.rightNode.red = RED;
-							node.parent.rightNode.rightNode.red = BLACK;
-							removeUnfullNode(node);
-							rotateLeft(node.parent);
-						}else {
-							if(brother.leftNode!=null) {
-								brother.red = RED;
-								brother.leftNode.red = BLACK;
-								rotateRight(brother);
-							}
-							removeUnfullNode(node);
-							rotateLeft(node.parent);
+							brother.leftNode.red = BLACK;
+							brother = brother.leftNode;
+							rotateRight(brother.parent);
 						}
+						rotateLeft(brother.parent);
 					}
-					//2:当被删除元素为黑、且兄弟颜色为黑，父节点为黑
-					if(node.parent.red==BLACK&&brother.red==BLACK) {
-						if(isLeaf(brother)) {
-							//将兄弟节点变为红，再把父亲看做那个被删除的元素（只是看做，实际上不删除），
-							//看看父亲符和哪一条删除规则，进行处理变化
-							brother.red = RED;
-							
-						}else if(isFull(brother)) {
-							node.parent.rightNode.rightNode.red = BLACK;
-							removeUnfullNode(node);
-							rotateLeft(node.parent);
-						}else {
-							if(brother.leftNode!=null) {
-								brother.leftNode.red = BLACK;
-								rotateRight(brother);
-							}
-							brother.rightNode.red = BLACK;
-							removeUnfullNode(node);
-							rotateLeft(node.parent);
+				}
+				//2:当被删除元素为黑、且兄弟颜色为黑，父节点为黑
+				else if(node.parent.red==BLACK&&brother.red==BLACK) {
+					if(isLeaf(brother)) {
+						//将兄弟节点变为红，再把父亲看做那个被删除的元素（只是看做，实际上不删除），
+						//看看父亲符和哪一条删除规则，进行处理变化
+						brother.red = RED;
+						
+					}else if(isFull(brother)) {
+						brother.rightNode.red = BLACK;
+						rotateLeft(brother.parent);
+					}else {
+						if(brother.leftNode!=null) {
+							brother.leftNode.red = BLACK;
+							brother = brother.leftNode;
+							rotateRight(brother.parent);
 						}
+						brother.rightNode.red = BLACK;
+						rotateLeft(brother.parent);
+					}
+				}
+				//3:当被删除元素为黑、且兄弟颜色为红，父节点为黑
+				else if(node.parent.red==BLACK&&brother.red==RED) {
+					//兄弟节点必有两个黑色子节点
+					Node nephew = brother.leftNode;
+					brother.red = BLACK;
+					rotateLeft(node.parent);
+					if(isLeaf(nephew)){
+						nephew.red = RED;
+					}else if(isFull(nephew)) {
+						nephew.red = RED;
+						nephew.rightNode.red = BLACK;
+						rotateLeft(nephew.parent);
+					}else{
+						if(nephew.leftNode!=null) {
+							nephew = nephew.leftNode;
+							rotateRight(nephew.parent);
+						}
+						nephew.rightNode.red = BLACK;
+						rotateLeft(nephew.parent);
 					}
 				}
 			}else if(node.rightNode==null) {
-				if(node.red==RED) {
-					if(isLeftNode(node)){
-						node.parent.leftNode = node.leftNode;
-					}else {
-						node.parent.rightNode = node.leftNode;
-					}
-					return node.value;
-				}else {
-					
-				}
+				node.leftNode.red = BLACK;
 			}else if(node.leftNode==null) {
-				if(node.red==RED) {
-					if(isLeftNode(node)){
-						node.parent.leftNode = node.rightNode;
-					}else {
-						node.parent.rightNode = node.rightNode;
-					}
-					return node.value;
-				}else {
-					
-				}
-			}else {
-				//左右节点都不为空时，找到当前节点的后继节点，将后继节点key和value赋给当前节点，然后做删除后继节点操作
-				Node succeed = findSucceedNode(node);
-				Object oldValue = node.value;
-				copyKV(succeed,node);
-				node = succeed;
-				node.value = oldValue;//返回值
-				if(node.red==RED) {
-					if(isLeftNode(node)){
-						node.parent.leftNode = null;
-					}else {
-						node.parent.rightNode = null;
-					}
-					return node.value;
-				}else {
-					
-				}
+				node.rightNode.red = BLACK;
 			}
 		}else {
 			
 		}
-		
-		return null;
 	}
 	
 	/**
@@ -399,7 +383,7 @@ public class RBTree {
 	 * @param key
 	 * @return
 	 */
-	public Node findSucceedNode(Node node) {
+	public Node findSuccessorNode(Node node) {
 		Assert.notNull(node, "获取后继节点时，节点不能为空！");
 		if(node.rightNode==null) {
 			return null;
