@@ -1,5 +1,7 @@
 package com.test.dataStructures.tree.rbTree;
 
+import java.util.Random;
+
 import com.test.common.util.Assert;
 
 /**
@@ -22,6 +24,9 @@ public class RBTree {
     private static final boolean BLACK = false;
     /** 根节点 **/
     private Node root;
+    
+    /** 大小 **/
+    private int size;
     
 	public class Node {
 		/** key **/
@@ -57,7 +62,7 @@ public class RBTree {
 		}
 		@Override
 		public String toString() {
-			return key + ":" + value + ":" + (red?"red":"black");
+			return key + ":" + value + ":" + (red?"R":"B");
 		}
 		
 	}
@@ -70,6 +75,7 @@ public class RBTree {
 	 */
 	public Object put(int key,Object value) {
 		if(root==null){
+			size++;
 			root = new Node(key,value,BLACK);
 		}
 		Node node = root;
@@ -80,6 +86,7 @@ public class RBTree {
 					node.leftNode = left;
 					//检查添加后节点是否符合红黑树要求
 					checkNode(left);
+					size++;
 					return null;
 				}
 				node = node.leftNode;
@@ -89,6 +96,7 @@ public class RBTree {
 					node.rightNode = right;
 					//检查添加后节点是否符合红黑树要求
 					checkNode(right);
+					size++;
 					return null;
 				}
 				node = node.rightNode;
@@ -98,6 +106,7 @@ public class RBTree {
 				return o;
 			}
 		}
+		size++;
 		return null;
 	}
 	
@@ -220,41 +229,51 @@ public class RBTree {
 	 * @param node
 	 */
 	public void rotateRight(Node node){
-		if(node!=null){
-			Node l = node.leftNode;
-			node.leftNode = l.rightNode;
-			if(l.rightNode!=null) {
-				l.rightNode.parent = node;
+//		try {
+			if(node!=null){
+				Node l = node.leftNode;
+				node.leftNode = l.rightNode;
+				if(l.rightNode!=null) {
+					l.rightNode.parent = node;
+				}
+				l.parent = node.parent;
+				if(node.parent==null) {
+					root = l;
+				}else if(node.parent.leftNode==node) {
+					node.parent.leftNode = l;
+				}else {
+					node.parent.rightNode = l;
+				}
+				l.rightNode = node;
+				node.parent = l;
 			}
-			if(node.parent==null) {
-				root = l;
-			}else if(node.parent.leftNode==node) {
-				node.parent.leftNode = l;
-			}else {
-				node.parent.rightNode = l;
-			}
-			l.rightNode = node;
-			node.parent = l;
-		}
+//		} catch (Exception e) {
+//			System.out.println("11");
+//		}
 	}
 	
 	public void rotateLeft(Node node){
-		if(node!=null){
-			Node r = node.rightNode;
-			node.rightNode = r.leftNode;
-			if(r.leftNode!=null) {
-				r.leftNode.parent = node;
+//		try {
+			if(node!=null){
+				Node r = node.rightNode;
+				node.rightNode = r.leftNode;
+				if(r.leftNode!=null) {
+					r.leftNode.parent = node;
+				}
+				r.parent = node.parent;
+				if(node.parent==null) {
+					root = r;
+				}else if(node.parent.rightNode==node) {
+					node.parent.rightNode = r;
+				}else {
+					node.parent.leftNode = r;
+				}
+				r.leftNode = node;
+				node.parent = r;
 			}
-			if(node.parent==null) {
-				root = r;
-			}else if(node.parent.rightNode==node) {
-				node.parent.rightNode = r;
-			}else {
-				node.parent.leftNode = r;
-			}
-			r.leftNode = node;
-			node.parent = r;
-		}
+//		} catch (Exception e) {
+//			System.out.println("11");
+//		}
 	}
 	
 	/**
@@ -267,96 +286,85 @@ public class RBTree {
 		if(node == null) {
 			return null;
 		}
-		if(node==root) {
-			root = null;
-			return node.value;
-		}
+
 		if(isFull(node)) {
 			//左右节点都不为空时，找到当前节点的后继节点，将后继节点key和value赋给当前节点，然后做删除后继节点操作
 			Node successor = findSuccessorNode(node);
 			copyKV(successor,node);
 			node = successor;
 		}
+		
+		if(isLeaf(node)) {
+			if(!isRoot(node)) {
+				checkDeletion(node);
+			}
+		}else if(node.leftNode==null){
+			node.rightNode.red = BLACK;
+		}else{
+			node.leftNode.red = BLACK;
+		}
 		removeUnfullNode(node);
-		fixAfterDeletion(node);
+		size--;
 		return node.value;
 	}
 	
-	public void fixAfterDeletion(Node node){
-		if(isLeftNode(node)) {
-			if(node.leftNode==null&&node.rightNode==null) {
-				//1:当被删除元素为黑，且兄弟节点为黑,父节点为红
-				Node brother = getRelative(node, Relative.brother);
-				if(node.parent.red==RED&&brother.red==BLACK) {
-					if(isLeaf(brother)) {
-						//兄弟节点两个孩子也为黑(null表示黑节点)，此时，交换兄弟节点与父节点的颜色；
-						node.parent.red = BLACK;
-						brother.red = RED;
-					}else if(isFull(brother)) {
-						//兄弟节点两个孩子也为红，
-						node.parent.red = BLACK;
-						brother.red = RED;
-						brother.rightNode.red = BLACK;
-						rotateLeft(brother.parent);
-					}else {
-						if(brother.leftNode!=null) {
-							brother.red = RED;
-							brother.leftNode.red = BLACK;
-							brother = brother.leftNode;
-							rotateRight(brother.parent);
-						}
-						rotateLeft(brother.parent);
-					}
-				}
-				//2:当被删除元素为黑、且兄弟颜色为黑，父节点为黑
-				else if(node.parent.red==BLACK&&brother.red==BLACK) {
-					if(isLeaf(brother)) {
-						//将兄弟节点变为红，再把父亲看做那个被删除的元素（只是看做，实际上不删除），
-						//看看父亲符和哪一条删除规则，进行处理变化
-						brother.red = RED;
-						
-					}else if(isFull(brother)) {
-						brother.rightNode.red = BLACK;
-						rotateLeft(brother.parent);
-					}else {
-						if(brother.leftNode!=null) {
-							brother.leftNode.red = BLACK;
-							brother = brother.leftNode;
-							rotateRight(brother.parent);
-						}
-						brother.rightNode.red = BLACK;
-						rotateLeft(brother.parent);
-					}
-				}
-				//3:当被删除元素为黑、且兄弟颜色为红，父节点为黑
-				else if(node.parent.red==BLACK&&brother.red==RED) {
-					//兄弟节点必有两个黑色子节点
-					Node nephew = brother.leftNode;
+	public void checkDeletion(Node node){
+		while (node != root && node.red == BLACK) {
+			Node brother = getRelative(node, Relative.brother);
+			if(isLeftNode(node)) {
+				//待删除的节点的兄弟节点是红色的节点；
+				if(brother.red==RED){
 					brother.red = BLACK;
+					node.parent.red = RED;
 					rotateLeft(node.parent);
-					if(isLeaf(nephew)){
-						nephew.red = RED;
-					}else if(isFull(nephew)) {
-						nephew.red = RED;
-						nephew.rightNode.red = BLACK;
-						rotateLeft(nephew.parent);
-					}else{
-						if(nephew.leftNode!=null) {
-							nephew = nephew.leftNode;
-							rotateRight(nephew.parent);
-						}
-						nephew.rightNode.red = BLACK;
-						rotateLeft(nephew.parent);
-					}
+					brother = getRelative(node, Relative.brother);
 				}
-			}else if(node.rightNode==null) {
-				node.leftNode.red = BLACK;
-			}else if(node.leftNode==null) {
-				node.rightNode.red = BLACK;
+				if(isBLACK(brother.leftNode)&&isBLACK(brother.rightNode)) {
+					brother.red = RED;
+					node = node.parent;
+				}else {
+					if(isBLACK(brother.rightNode)) {
+						brother.leftNode.red = BLACK;
+						brother.red = RED;
+						rotateRight(brother);
+						brother = getRelative(node, Relative.brother);
+					}
+					brother.red = node.parent.red;
+					node.parent.red = BLACK;
+					brother.rightNode.red = BLACK;
+					rotateLeft(brother.parent);
+					node = root;
+				}
+			}else {
+				//待删除的节点的兄弟节点是红色的节点；
+				if(brother.red==RED){
+					brother.red = BLACK;
+					node.parent.red = RED;
+					rotateRight(node.parent);
+					brother = getRelative(node, Relative.brother);
+				}
+				if(isBLACK(brother.leftNode)&&isBLACK(brother.rightNode)) {
+					//待删除的节点的兄弟节点是黑色的节点，且兄弟节点的子节点都是黑色的;
+					brother.red = RED;
+					node = node.parent;
+				}else {
+					if(isBLACK(brother.leftNode)) {
+						//待删除的节点的兄弟节点是黑色的节点，且兄弟节点右子节点为黑（空）
+						brother.rightNode.red = BLACK;
+						brother.red = RED;
+						rotateLeft(brother);
+						brother = getRelative(node, Relative.brother);
+					}
+					//待删除的节点的兄弟节点是黑色的节点，且兄弟节点右子节点为红色
+					brother.red = node.parent.red;
+					node.parent.red = BLACK;
+					brother.leftNode.red = BLACK;
+					rotateRight(brother.parent);
+					node = root;
+				}
 			}
-		}else {
-			
 		}
+		node.red = BLACK;
 	}
 	
 	/**
@@ -427,10 +435,34 @@ public class RBTree {
 	 * @param node
 	 */
 	public void removeUnfullNode(Node node){
-		if(isLeftNode(node)) {
-			node.parent.leftNode = node.leftNode==null?node.rightNode:node.leftNode;
+		if(node==root) {
+			if(node.leftNode==null) {
+				root = node.rightNode;
+			}else {
+				root = node.leftNode;
+			}
 		}else {
-			node.parent.rightNode = node.leftNode==null?node.rightNode:node.leftNode;
+			if(isLeftNode(node)) {
+				if(node.leftNode==null) {
+					node.parent.leftNode = node.rightNode;
+					if(node.rightNode!=null) {
+						node.rightNode.parent = node.parent;
+					}
+				}else {
+					node.parent.leftNode = node.leftNode;
+					node.leftNode.parent = node.parent;
+				}
+			}else {
+				if(node.leftNode==null) {
+					node.parent.rightNode = node.rightNode;
+					if(node.rightNode!=null) {
+						node.rightNode.parent = node.parent;
+					}
+				}else {
+					node.parent.rightNode = node.leftNode;
+					node.leftNode.parent = node.parent;
+				}
+			}
 		}
 	}
 	
@@ -458,8 +490,16 @@ public class RBTree {
 		return false;
 	}
 	
+	public boolean isBLACK(Node node) {
+		if(node==null||node.red==BLACK) {
+			return true;
+		}
+		return false;
+	}
+	
 	public void printTree( ){
 		printTree(root);
+		System.out.println();
 	}
 	public void printTree(Node node){
 		if(node==null)return;  
@@ -474,11 +514,25 @@ public class RBTree {
 	
 	public static void main(String[] args) {
 		RBTree rbt = new RBTree();
-		int[] data = {20,15,30,16,13,26,35,25,32,38,40};
-		for(int i=0;i<data.length;i++){
-			rbt.put(data[i],null);
+		int length = 20;
+		int[] data = new int[length];
+		Random r = new Random();
+		for(int i=0;i<length;i++){
+			int a = r.nextInt(length*10);
+			data[i]= a;
+			System.out.print(a+",");
 		}
-		
+		System.out.println();
+//		int[] data = {20,15,30,16,13,26,35,25,32,38,40};
+//		int[] data = {118,112,171,0,33,127,11,57,9,132,95,66,100,196,24,149,5,113,131,128};
+		for(int i=0;i<data.length;i++){
+			rbt.put(data[i],"v"+data[i]);
+		}
+		rbt.printTree();
+		for(int i=0;i<data.length;i++){
+			System.out.println(data[i]+"-->"+rbt.remove(data[i])+" size="+rbt.size);
+//			rbt.printTree();
+		}
 		rbt.printTree();
 	}
 }
