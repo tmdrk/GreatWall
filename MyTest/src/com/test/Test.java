@@ -3,7 +3,7 @@ package com.test;
 public class Test {
 	public static void main(String[] args) {
 		Test t = new Test();
-		User u = new User("huanhuanhuanhuan",21);
+		User u = new User("huanhuanhuanhuanbbbbbb",21);
 		User c = new User("child",1);
 		String name = "zhoujie";
 		int aa = 123;
