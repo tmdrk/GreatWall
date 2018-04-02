@@ -12,7 +12,7 @@ public class StringMatch {
 	public static void main(String[] args) {
 //		char[] str = {'a','b','c','d','e','f','a','a','b','c','d','e','f','g','h'};
 //		char[] subStr = {'a','b','c','d','e','f','g'};
-		String str = "eabchfabcheaaabcdefgh";
+		String str = "aaaaaaeabchfabcheaaabcdefgh";
 		String subStr = "abchfabcdef";
 //		printArray("",getNext(subStr));
 		System.out.println(index(str.toCharArray(),subStr.toCharArray()));
