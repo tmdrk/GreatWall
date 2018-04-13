@@ -32,6 +32,6 @@ public class Fraction {
     public static void main(String[] args) {
         // TODO Auto-generated method stub
         Fraction f = new Fraction(868424680, 246804680);
-        System.out.println("result:"+f.toString()+"hahhagagagagaggg");
+        System.out.println(f.toString());
     }
 }

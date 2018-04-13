@@ -13,7 +13,6 @@ import java.util.Map.Entry;
 
 import org.apache.commons.lang.StringUtils;
 
-import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
 import com.test.entity.User;
 
 //import com.api.common.constants.CoreConstants;

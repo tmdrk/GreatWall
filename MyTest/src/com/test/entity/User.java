@@ -5,6 +5,16 @@ public class User {
 	String userName;
 	String mobileNumber;
 	String userType;
+	public User(){
+		
+	}
+	public User(long userId, String userName, String mobileNumber, String userType) {
+		super();
+		this.userId = userId;
+		this.userName = userName;
+		this.mobileNumber = mobileNumber;
+		this.userType = userType;
+	}
 	public long getUserId() {
 		return userId;
 	}
@@ -28,5 +38,10 @@ public class User {
 	}
 	public void setUserType(String userType) {
 		this.userType = userType;
+	}
+	@Override
+	public String toString() {
+		return "User [userId=" + userId + ", userName=" + userName + ", mobileNumber=" + mobileNumber + ", userType="
+				+ userType + "]";
 	}
 }

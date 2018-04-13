@@ -81,6 +81,8 @@ public class MapTest {
 		}
 		Long endTime2 = System.currentTimeMillis();
 		System.out.println("<= --"+(endTime2-startTime2));
+		String aaa = "1000.00000";
+		System.out.println(aaa.split("\\.")[0]);
 	}
 	
 	public static void main() {
