@@ -28,7 +28,7 @@ public class ListSort {
 	 * @date 2018年4月13日下午5:30:40
 	 */
 	public static void  testStreamSort(){
-		Comparator<User> cmpUserId = Comparator.comparing(User::getUserId); 
+		Comparator<User> cmpUserId = Comparator.comparing(User::getUserId).reversed().thenComparing(User::getUserName); 
 		Comparator<User> cmpUserName = Comparator.comparing(User::getUserName,
 				String.CASE_INSENSITIVE_ORDER).reversed(); 
 		List<User> list = new ArrayList<User>();
@@ -42,7 +42,7 @@ public class ListSort {
 		list.add(u3);
 		list.add(u4);
 		list.add(u5);
-		list = list.stream().sorted(cmpUserId.reversed()).collect(Collectors.toList());
+		list = list.stream().sorted(cmpUserId).collect(Collectors.toList());
 		for(User u:list){
 			System.out.println(u.toString());
 		}

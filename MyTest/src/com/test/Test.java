@@ -18,6 +18,23 @@ public class Test {
 		System.out.println(u+"|"+name+"|"+aa);
 		t.make2(u.u);
 		System.out.println(u+"|"+name+"|"+aa);
+		
+		int a = 9;
+		if(a == 9){
+		}
+		
+		switch (a) {
+		case 9:
+			
+			break ;
+
+		default:
+			break;
+		}
+		
+		BolckLable:{
+			System.out.println("aaa");
+		};
 	}
 	public void make(User uu,String name,int aa){
 //		u = new User("zhouzhou",23);
