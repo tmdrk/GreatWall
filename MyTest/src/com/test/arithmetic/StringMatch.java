@@ -18,6 +18,7 @@ public class StringMatch {
 		System.out.println(index(str.toCharArray(),subStr.toCharArray()));
 		System.out.println(str.indexOf(subStr));
 		kmpIndex(str,subStr);
+		System.out.println("mast");
 	}
 	
 	public static int index(char[] str,char[] subStr){
