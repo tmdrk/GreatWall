@@ -8,6 +8,25 @@ import java.util.TreeMap;
 import org.apache.commons.lang.StringUtils;
 
 public class TreeMapTest {
+	public static String getUrlParamsByMap1(Map<String, Object> map) {
+        if (map == null) {
+            return "";
+        }
+        StringBuffer sb = new StringBuffer();
+        map = new TreeMap<String, Object>(map);
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            if(entry.getValue() == null){
+                continue;
+            }
+            sb.append(entry.getKey() + "=" + entry.getValue());
+            sb.append("&");
+        }
+        String s = sb.toString();
+        if (s.endsWith("&")) {
+            s = StringUtils.substringBeforeLast(s, "&");
+        }
+        return s;
+    }
 	public static void main(String[] args) {
 		SortedMap<String, Object> p = new TreeMap<String, Object>();  
         p.put("nonce_str", "23234234");  
@@ -44,6 +63,46 @@ public class TreeMapTest {
      * @param map
      * @return
      */
+    public static String getUrlParamsByMap2(Map<String, Object> map) {
+        if (map == null) {
+            return "";
+        }
+        StringBuffer sb = new StringBuffer();
+        map = new TreeMap<String, Object>(map);
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            if(entry.getValue() == null){
+                continue;
+            }
+            sb.append(entry.getKey() + "=" + entry.getValue());
+            sb.append("&");
+        }
+        String s = sb.toString();
+        if (s.endsWith("&")) {
+            s = StringUtils.substringBeforeLast(s, "&");
+        }
+        return s;
+    }
+    
+    public static String getUrlParamsByMap3(Map<String, Object> map) {
+        if (map == null) {
+            return "";
+        }
+        StringBuffer sb = new StringBuffer();
+        map = new TreeMap<String, Object>(map);
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            if(entry.getValue() == null){
+                continue;
+            }
+            sb.append(entry.getKey() + "=" + entry.getValue());
+            sb.append("&");
+        }
+        String s = sb.toString();
+        if (s.endsWith("&")) {
+            s = StringUtils.substringBeforeLast(s, "&");
+        }
+        return s;
+    }
+    
     public static String getUrlParamsByMap(Map<String, Object> map) {
         if (map == null) {
             return "";

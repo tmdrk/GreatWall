@@ -87,6 +87,20 @@ public class MapTest {
 		Random random = new Random();
 		System.out.println(hash(String.valueOf(random.nextInt(900)+""))&(4));
 	}
+	public static long hash1(String key) { 
+		int h;
+		return (key == null) ? 0 : (h = key.hashCode()) ^ (h >>> 16);
+	}
+	
+	public static long hash2(String key) { 
+		int h;
+		return (key == null) ? 0 : (h = key.hashCode()) ^ (h >>> 16);
+	}
+	
+	public static long hash3(String key) { 
+		int h;
+		return (key == null) ? 0 : (h = key.hashCode()) ^ (h >>> 16);
+	}
 	
 	public static long hash(String key) { 
 		int h;
