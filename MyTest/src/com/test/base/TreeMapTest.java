@@ -37,7 +37,16 @@ public class TreeMapTest {
         pp.put("remark","kjsdfhksfjs");
         pp.put("wishing", "sdfsd");  
         System.out.println(getUrlParamsByMap(pp));
-        Map m = new HashMap();
+        getMap();
+	}
+	private static void getMap() {
+		Map map = new HashMap();
+        StringBuffer sb = new StringBuffer();
+        map = new TreeMap<String, Object>(map);
+        String s = sb.toString();
+        if (s.endsWith("&")) {
+            s = StringUtils.substringBeforeLast(s, "&");
+        }
 	}
     /**
      * 将map转换成url
